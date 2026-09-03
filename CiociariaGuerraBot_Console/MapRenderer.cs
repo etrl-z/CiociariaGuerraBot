@@ -1,54 +1,59 @@
-﻿using System.Xml.Linq;
+﻿using System.Configuration;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace CiociariaGuerraBot_Console
 {
     class MapRenderer
     {
         private readonly string _fileSvg;
+        private readonly string _cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"] ?? String.Empty;
+
+        private readonly XNamespace ns = "http://www.w3.org/2000/svg";
+        private readonly XDocument _svg;
+        private XElement? _territori;
+
+        private readonly Dictionary<string, string> _coloriCss = new();
+        private readonly Dictionary<int, XElement> _paths = new();
 
         public MapRenderer(string fileSvg)
         {
             _fileSvg = fileSvg;
+
+            // Carica SVG
+            _svg = XDocument.Load(_fileSvg);
+
+            // Indicizza tutti i colori del CSS per id
+            CaricaColoriCss();
+
+            // Trova il gruppo Territori
+            _territori = _svg
+                .Descendants(ns + "g")
+                .FirstOrDefault(g =>
+                    (string?)g.Attribute("id") == "Territori");
+
+            if (_territori == null)
+                throw new Exception("Gruppo 'Territori' non trovato nell'SVG.");
+
+            // Indicizza tutti i path per id
+            CaricaPaths();
+
+            Directory.CreateDirectory(_cartellaOutput);
         }
 
-        public void Renderizza(List<Comune> comuni, int turno)
+
+        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idAttaccato)
         {
-            // Carica il file SVG originale
-            XDocument svg = XDocument.Load(_fileSvg);
-
-            // Namespace SVG
-            XNamespace ns = "http://www.w3.org/2000/svg";
-
-            // Trova il gruppo "Territori"
-            XElement? territori = svg
-                .Descendants(ns + "g")
-                .FirstOrDefault(g => (string?)g.Attribute("id") == "Territori");
-
-            if (territori == null)
-            {
-                throw new Exception("Gruppo 'Territori' non trovato nell'SVG.");
-            }
-
-            // Per ogni comune aggiorniamo il colore del relativo path
             foreach (Comune comune in comuni)
             {
-                string idSvg = comune.Id.ToString();
-
-                XElement? path = territori
-                    .Descendants(ns + "path")
-                    .FirstOrDefault(p => (string?)p.Attribute("id") == idSvg);
-
-                if (path == null)
+                if (!_paths.TryGetValue(comune.Id, out XElement? path))
                 {
-                    Console.WriteLine(
-                        $"ATTENZIONE: territorio non trovato nell'SVG: {comune.Nome}"
-                    );
+                    Console.WriteLine($"ATTENZIONE: territorio non trovato nell'SVG: {comune.Nome}");
 
                     continue;
                 }
 
-                // non conquistato = proprio colore
-                // conquistato = colore del proprietario
+                // SETTA COLORE DEL TERRITORIO
                 string colore;
 
                 if (comune.IdProprietario == null)
@@ -60,129 +65,114 @@ namespace CiociariaGuerraBot_Console
                     colore = GetColore(comune.IdProprietario.Value);
                 }
 
+                // SETTA BORDO
+                string stroke = "#000000";
+                string strokeWidth = "1";
+
+                if (comune.Id == idAttaccante)
+                {
+                    stroke = "#00FF00";
+                    strokeWidth = "4";
+                }
+
+                if (comune.Id == idAttaccato)
+                {
+                    stroke = "#FF0000";
+                    strokeWidth = "4";
+                }
+
+                // APPLICA
                 path.SetAttributeValue(
                     "style",
-                    "fill:" + colore + ";stroke:#000000;stroke-miterlimit:10"
+                    $"fill:{colore};stroke:{stroke};stroke-width:{strokeWidth};stroke-miterlimit:10"
                 );
             }
 
-            // Crea la cartella Output se non esiste
-            string cartellaOutput = "Output";
 
-            Directory.CreateDirectory(cartellaOutput);
+            // OUTPUT IMG
 
-            // Nome del file
             string nomeFile = $"Mappa_Turno_{turno:D3}.svg";
 
-            string percorsoOutput = Path.Combine(
-                cartellaOutput,
-                nomeFile
-            );
+            string percorsoOutput = Path.Combine(_cartellaOutput, nomeFile);
 
-            // Salva
-            svg.Save(percorsoOutput);
+            _svg.Save(percorsoOutput);
 
             Console.WriteLine($"Mappa salvata: {percorsoOutput}");
         }
 
 
-        private string GetColore(int idProprietario)
+        private void CaricaPaths()
         {
-            string[] colori =
+            foreach (XElement path in _territori!.Descendants(ns + "path"))
             {
-             "#2bc84b",
-             "#465473",
-             "#0d1f6d",
-             "#cf0d0d",
-             "#3caea8",
-             "#a1ddf3",
-             "#f16e7e",
-             "#a19909",
-             "#93095b",
-             "#bf4a8f",
-             "#835454",
-             "#5976ba",
-             "#014a80",
-             "#ca3c4e",
-             "#1c5205",
-             "#308d5d",
-             "#feac0e",
-             "#f16624",
-             "#eb028c",
-             "#916268",
-             "#a764a7",
-             "#67e732",
-             "#fe881f",
-             "#f5cf01",
-             "#176123",
-             "#fe5858",
-             "#772437",
-             "#d98156",
-             "#a2d439",
-             "#42933e",
-             "#9f1013",
-             "#8dc6da",
-             "#fe7c3d",
-             "#25b3e8",
-             "#bf2235",
-             "#91278e",
-             "#f16c4f",
-             "#2e495a",
-             "#e3db4f",
-             "#d6132a",
-             "#cb1c23",
-             "#c1b812",
-             "#faaf5d",
-             "#004c7e",
-             "#8781bd",
-             "#01bef2",
-             "#dacf3b",
-             "#fef69a",
-             "#1079be",
-             "#8cc53f",
-             "#faae5d",
-             "#670840",
-             "#764d25",
-             "#fef101",
-             "#5ed16e",
-             "#f8ae83",
-             "#7acbc7",
-             "#8393c9",
-             "#f5844e",
-             "#5d853b",
-             "#ac0015",
-             "#1c70a8",
-             "#672f92",
-             "#ad3141",
-             "#bdb96b",
-             "#e35aac",
-             "#a57c52",
-             "#e32424",
-             "#824a14",
-             "#fef468",
-             "#fef54d",
-             "#b85b5e",
-             "#3d7ba2",
-             "#cec51b",
-             "#036488",
-             "#625ea8",
-             "#d03f94",
-             "#4d9b2d",
-             "#ebe354",
-             "#5eae84",
-             "#a4a17b",
-             "#534741",
-             "#3fb679",
-             "#64b643",
-             "#39b44a",
-             "#3d931a",
-             "#c07830",
-             "#78c159",
-             "#0072bb",
-             "#57b5fe"
-            };
+                string? idAttr = path.Attribute("id")?.Value;
 
-            return colori[idProprietario % colori.Length];
+                if (idAttr != null && int.TryParse(idAttr, out int id))
+                {
+                    _paths[id] = path;
+                }
+            }
+
+            Console.WriteLine($"Indicizzati {_paths.Count} territori.");
+        }
+
+
+        private void CaricaColoriCss()
+        {
+            var style = _svg
+                .Descendants()
+                .FirstOrDefault(e =>
+                    e.Name.LocalName == "style");
+
+            if (style == null)
+            {
+                throw new Exception("Nessun elemento <style> trovato nell'SVG.");
+            }
+
+            string css = style.Value;
+
+            var regex = new Regex(
+                @"\.(s\d+)\s*\{\s*fill:\s*(#[0-9a-fA-F]{6})",
+                RegexOptions.Compiled
+            );
+
+            foreach (Match match in regex.Matches(css))
+            {
+                string classe = match.Groups[1].Value;
+
+                string colore = match.Groups[2].Value;
+
+                _coloriCss[classe] = colore;
+            }
+
+            Console.WriteLine($"Caricate {_coloriCss.Count} classi CSS.");
+        }
+
+
+        private string GetColore(int id)
+        {
+            if (!_paths.TryGetValue(id, out XElement? path))
+            {
+                Console.WriteLine($"Path non trovato per ID {id}");
+                return "#FFFFFF";
+            }
+
+            string? classe = path.Attribute("class")?.Value;
+
+            if (string.IsNullOrEmpty(classe))
+            {
+                Console.WriteLine($"Classe CSS non trovata per ID {id}");
+                return "#FFFFFF";
+            }
+
+            if (_coloriCss.TryGetValue(classe, out string? colore))
+            {
+                return colore;
+            }
+
+            Console.WriteLine($"Colore non trovato per classe {classe}");
+
+            return "#FFFFFF";
         }
     }
 }
