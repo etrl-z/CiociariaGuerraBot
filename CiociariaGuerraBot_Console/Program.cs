@@ -9,7 +9,7 @@ Random rnd = new Random();
 
 MapRenderer renderer = new(ConfigurationManager.AppSettings["FileMappa"] ?? String.Empty);
 
-List<Comune> comuni = SetComuni();
+List<Comune> comuni = CaricaComuni();
 Console.WriteLine("Lista comuni caricata.");
 
 
@@ -29,54 +29,54 @@ while (buffer.Count > 1)
     if (comuneEstratto == null) continue;
     Console.WriteLine($"Id estratto: {rnd_id} | {comuneEstratto.Nome}");
 
-    Comune? attaccante;
+    Comune? comuneAttaccante;
     if (comuneEstratto.IdProprietario == null)
-        attaccante = comuneEstratto;
+        comuneAttaccante = comuneEstratto;
     else
-        attaccante = comuni.FirstOrDefault(c => c.Id == comuneEstratto.IdProprietario);
+        comuneAttaccante = comuni.FirstOrDefault(c => c.Id == comuneEstratto.IdProprietario);
 
-    if (attaccante == null) continue;
-    Console.WriteLine($"Attaccante: {attaccante.Nome}");
+    Console.WriteLine($"Attaccante: {comuneAttaccante?.Nome}");
 
     Comune? comunePiuVicino = comuni
-    .Where(c => c.Id != attaccante.Id)
-    .Where(c => c.IdProprietario != attaccante.Id)
-    .OrderBy(c => attaccante.DistanzaDa(c))
+    .Where(c => c.Id != comuneAttaccante?.Id)
+    .Where(c => c.IdProprietario != comuneAttaccante?.Id)
+    .OrderBy(c => comuneAttaccante?.DistanzaDa(c))
     .FirstOrDefault();
 
-    if (comunePiuVicino == null) continue;
-
     #region Genera Testo
-    Console.Write($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {attaccante.Nome} ha conquistato il territorio di {comunePiuVicino.Nome}");
+    Console.Write($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {comuneAttaccante?.Nome} ha conquistato il territorio di {comunePiuVicino?.Nome}");
 
-    if (comunePiuVicino.IdProprietario != null)
+    if (comunePiuVicino?.IdProprietario != null)
     {
         var oldProprietario = comuni.FirstOrDefault(c => c.Id == comunePiuVicino.IdProprietario);
-        if (oldProprietario == null) continue;
-        Console.WriteLine($", precedentemente appartenente al Comune di {oldProprietario.Nome}.");
+        Console.WriteLine($", precedentemente appartenente al Comune di {oldProprietario?.Nome}.");
 
-        if (comuni.Where(c => c.Id != comunePiuVicino.Id && c.IdProprietario == oldProprietario.Id) == null)
-            Console.WriteLine($"Il Comune di {comunePiuVicino.Nome} è stato completamente sconfitto.");
+        bool nonHaPiuTerritori = !comuni.Any(c => c.Id != comunePiuVicino.Id && c.IdProprietario == oldProprietario?.Id);
+        if (nonHaPiuTerritori)
+            Console.WriteLine($"Il Comune di {oldProprietario?.Nome} è stato completamente sconfitto.");
     }
     else
     {
-        Console.WriteLine($".\nIl Comune di {comunePiuVicino.Nome} è stato completamente sconfitto.");
+        Console.WriteLine($".\nIl Comune di {comunePiuVicino?.Nome} è stato completamente sconfitto.");
     }
     #endregion
 
 
-    // MODIFICA IL PROPRIETARIO DEL COMUNE CONQUISTATO E SETTA IL NUOVO BARICENTRO DEL TERRITORIO
-    attaccante.Assorbi(comunePiuVicino);
+    if (comuneAttaccante != null && comunePiuVicino != null)
+    {
+
+        // MODIFICA IL PROPRIETARIO DEL COMUNE CONQUISTATO E SETTA IL NUOVO BARICENTRO DEL TERRITORIO
+        comuneAttaccante.Assorbi(comunePiuVicino);
 
 
-    // RICARICA IL BUFFER
-    buffer = comuni.Where(x => x.IdProprietario == null).ToList();
-    Console.WriteLine($"{buffer.Count} {(buffer.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
+        // RICARICA IL BUFFER
+        buffer = comuni.Where(x => x.IdProprietario == null).ToList();
+        Console.WriteLine($"{buffer.Count} {(buffer.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
 
 
-    // RENDERIZZA LA MAPPA
-    renderer.Renderizza(comuni, indexer, attaccante.Id, comunePiuVicino.Id);
-
+        // RENDERIZZA LA MAPPA
+        renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comunePiuVicino.Id);
+    }
 
 }
 
@@ -90,7 +90,7 @@ Console.WriteLine($"Ha vinto {winner.Nome}!");
 Console.ReadKey();
 
 
-static List<Comune> SetComuni()
+static List<Comune> CaricaComuni()
 {
     string file = ConfigurationManager.AppSettings["FileComuni"] ?? String.Empty;
 
