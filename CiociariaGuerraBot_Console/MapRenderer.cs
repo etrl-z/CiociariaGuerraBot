@@ -42,7 +42,7 @@ namespace CiociariaGuerraBot_Console
         }
 
 
-        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idAttaccato)
+        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idConquistato)
         {
             foreach (Comune comune in comuni)
             {
@@ -69,16 +69,16 @@ namespace CiociariaGuerraBot_Console
                 string stroke = "#000000";
                 string strokeWidth = "1";
 
-                if (comune.Id == idAttaccante)
+                if (comune.Id == idAttaccante) // revisionare
                 {
-                    stroke = "#00FF00";
-                    strokeWidth = "4";
+                    //stroke = "#00FF00";
+                    //strokeWidth = "4";
                 }
 
-                if (comune.Id == idAttaccato)
+                if (comune.Id == idConquistato) // revisionare
                 {
-                    stroke = "#FF0000";
-                    strokeWidth = "4";
+                    //stroke = "#FF0000";
+                    //strokeWidth = "4";
                 }
 
                 // APPLICA

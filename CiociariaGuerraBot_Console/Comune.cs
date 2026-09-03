@@ -34,16 +34,5 @@ namespace CiociariaGuerraBot_Console
 
             return Math.Sqrt(dx * dx + dy * dy);
         }
-
-        public void Assorbi(Comune c2)
-        {
-            c2.IdProprietario = Id;
-
-            BaricentroTerritorioX =
-                (BaricentroTerritorioX + c2.BaricentroOrigX) / 2;
-
-            BaricentroTerritorioY =
-                (BaricentroTerritorioY + c2.BaricentroOrigY) / 2;
-        }
     }
 }
