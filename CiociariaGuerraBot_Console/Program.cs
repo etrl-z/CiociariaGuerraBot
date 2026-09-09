@@ -14,6 +14,15 @@ Console.WriteLine("Lista comuni caricata.");
 
 var TEST_EXTRACTIONS = new int[] { 6, 6, 71, 53, 53, 53, 53 };
 
+//renderer.Renderizza(comuni, 0, 3, 85); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 3), comuni.FirstOrDefault(c => c.Id == 85));
+//renderer.Renderizza(comuni, 1, 3, 29); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 3), comuni.FirstOrDefault(c => c.Id == 29));
+//renderer.Renderizza(comuni, 2, 3, 87); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 3), comuni.FirstOrDefault(c => c.Id == 87));
+//renderer.Renderizza(comuni, 3, 42, 87); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 87));
+//renderer.Renderizza(comuni, 4, 42, 29); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 29));
+//renderer.Renderizza(comuni, 5, 42, 85); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 85));
+//renderer.Renderizza(comuni, 6, 42, 3); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 3));
+//return;
+
 var buffer = comuni.Where(x => x.IdProprietario == null).ToList();
 while (buffer.Count > 1)
 {
@@ -67,43 +76,7 @@ while (buffer.Count > 1)
 
     if (comuneAttaccante != null && comuneConquistato != null)
     {
-        // SALVO IL VECCHIO PROPRIETARIO
-        Comune? oldProprietario = null;
-        if (comuneConquistato.IdProprietario != null)
-            oldProprietario = comuni.FirstOrDefault(c => c.Id == comuneConquistato.IdProprietario);
-
-        // CAMBIO PROPRIETARIO
-        comuneConquistato.IdProprietario = comuneAttaccante.Id;
-
-        // RICALCOLO IL BARICENTRO DEL NUOVO PROPRIETARIO
-        RicalcolaBaricentro(comuneAttaccante, comuni);
-
-        // RICALCOLO IL BARICENTRO DEL VECCHIO PROPRIETARIO
-        if (oldProprietario != null)
-        {
-            RicalcolaBaricentro(oldProprietario, comuni);
-        }
-
-        // DEBUG
-        foreach (Comune c in comuni)
-        {
-            var isexpanded = !(
-            c.BaricentroOrigX == c.BaricentroTerritorioX &&
-            c.BaricentroOrigY == c.BaricentroTerritorioY);
-
-            var proprietario = comuni.FirstOrDefault(x => x.Id == c.IdProprietario);
-
-            Console.WriteLine(
-                $"{c.Id,-2} | " +
-                $"{c.Nome,-28} | " +
-                $"P: {proprietario?.Nome,-28} | " +
-                $"X {c.BaricentroOrigX,8:F2} | " +
-                $"Y {c.BaricentroOrigY,8:F2} | " +
-                $"X_t {c.BaricentroTerritorioX,8:F2} | " +
-                $"Y_t {c.BaricentroTerritorioY,8:F2} | " +
-                $"{(isexpanded ? "Y" : "False")}"
-            );
-        }
+        HandlerConquista(comuni, comuneAttaccante, comuneConquistato);
 
         // RICARICA IL BUFFER
         buffer = comuni.Where(x => x.IdProprietario == null).ToList();
@@ -125,6 +98,48 @@ Console.WriteLine($"Ha vinto {winner.Nome}!");
 
 Console.ReadKey();
 
+
+
+static void HandlerConquista(List<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato)
+{
+    // SALVO IL VECCHIO PROPRIETARIO
+    Comune? oldProprietario = null;
+    if (comuneConquistato.IdProprietario != null)
+        oldProprietario = comuni.FirstOrDefault(c => c.Id == comuneConquistato.IdProprietario);
+
+    // CAMBIO PROPRIETARIO
+    comuneConquistato.IdProprietario = comuneAttaccante.Id;
+
+    // RICALCOLO IL BARICENTRO DEL NUOVO PROPRIETARIO
+    RicalcolaBaricentro(comuneAttaccante, comuni);
+
+    // RICALCOLO IL BARICENTRO DEL VECCHIO PROPRIETARIO
+    if (oldProprietario != null)
+    {
+        RicalcolaBaricentro(oldProprietario, comuni);
+    }
+
+    // DEBUG
+    foreach (Comune c in comuni)
+    {
+        var isexpanded = !(
+        c.BaricentroOrigX == c.BaricentroTerritorioX &&
+        c.BaricentroOrigY == c.BaricentroTerritorioY);
+
+        var proprietario = comuni.FirstOrDefault(x => x.Id == c.IdProprietario);
+
+        Console.WriteLine(
+            $"{c.Id,-2} | " +
+            $"{c.Nome,-28} | " +
+            $"P: {proprietario?.Nome,-28} | " +
+            $"X {c.BaricentroOrigX,8:F2} | " +
+            $"Y {c.BaricentroOrigY,8:F2} | " +
+            $"X_t {c.BaricentroTerritorioX,8:F2} | " +
+            $"Y_t {c.BaricentroTerritorioY,8:F2} | " +
+            $"{(isexpanded ? "Y" : "False")}"
+        );
+    }
+}
 
 static void RicalcolaBaricentro(Comune proprietario, List<Comune> comuni)
 {

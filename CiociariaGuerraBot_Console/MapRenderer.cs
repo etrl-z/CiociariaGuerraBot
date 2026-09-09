@@ -69,16 +69,28 @@ namespace CiociariaGuerraBot_Console
                 string stroke = "#000000";
                 string strokeWidth = "1";
 
-                if (comune.Id == idAttaccante) // revisionare
+                if (comune.Id == idAttaccante)
                 {
-                    //stroke = "#00FF00";
-                    //strokeWidth = "4";
+                    stroke = "#00FF00";
+                    strokeWidth = "4";
                 }
 
-                if (comune.Id == idConquistato) // revisionare
+                if (comune.IdProprietario == idAttaccante)
                 {
-                    //stroke = "#FF0000";
-                    //strokeWidth = "4";
+                    stroke = "#00FF00";
+                    strokeWidth = "4";
+                }
+
+                if (comune.Id == idConquistato)
+                {
+                    stroke = "#FF0000";
+                    strokeWidth = "4";
+                }
+
+                if (comune.IdProprietario == idConquistato)
+                {
+                    stroke = "#0000FF";
+                    strokeWidth = "4";
                 }
 
                 // APPLICA
@@ -87,6 +99,10 @@ namespace CiociariaGuerraBot_Console
                     $"fill:{colore};stroke:{stroke};stroke-width:{strokeWidth};stroke-miterlimit:10"
                 );
             }
+
+            // PORTA ATTACCANTE E CONQUISTATO IN PRIMO PIANO
+            PortaInPrimoPiano(idAttaccante);
+            PortaInPrimoPiano(idConquistato);
 
 
             // OUTPUT IMG
@@ -100,6 +116,19 @@ namespace CiociariaGuerraBot_Console
             Console.WriteLine($"Mappa salvata: {percorsoOutput}");
         }
 
+        private void PortaInPrimoPiano(int id)
+        {
+            if (!_paths.TryGetValue(id, out XElement? path))
+                return;
+
+            XElement? parent = path.Parent;
+
+            if (parent == null)
+                return;
+
+            path.Remove();
+            parent.Add(path);
+        }
 
         private void CaricaPaths()
         {
