@@ -53,7 +53,7 @@ namespace CiociariaGuerraBot_Console
                     continue;
                 }
 
-                // SETTA COLORE DEL TERRITORIO
+                // SETTA COLORE DEL TERRITORIO --> REVISIONARE
                 string colore;
 
                 if (comune.IdProprietario == null)
@@ -65,7 +65,7 @@ namespace CiociariaGuerraBot_Console
                     colore = GetColore(comune.IdProprietario.Value);
                 }
 
-                // SETTA BORDO
+                // SETTA BORDO --> REVISIONARE
                 string stroke = "#000000";
                 string strokeWidth = "1";
 
@@ -101,8 +101,8 @@ namespace CiociariaGuerraBot_Console
             }
 
             // PORTA ATTACCANTE E CONQUISTATO IN PRIMO PIANO
-            PortaInPrimoPiano(idAttaccante);
-            PortaInPrimoPiano(idConquistato);
+            PortaInPrimoPiano(comuni, idAttaccante);
+            PortaInPrimoPiano(comuni, idConquistato);
 
 
             // OUTPUT IMG
@@ -116,18 +116,24 @@ namespace CiociariaGuerraBot_Console
             Console.WriteLine($"Mappa salvata: {percorsoOutput}");
         }
 
-        private void PortaInPrimoPiano(int id)
+        private void PortaInPrimoPiano(List<Comune> comuni, int idProprietario)
         {
-            if (!_paths.TryGetValue(id, out XElement? path))
-                return;
+            foreach (Comune comune in comuni)
+            {
+                if (comune.Id != idProprietario && comune.IdProprietario != idProprietario)
+                    continue;
 
-            XElement? parent = path.Parent;
+                if (!_paths.TryGetValue(comune.Id, out XElement? path))
+                    continue;
 
-            if (parent == null)
-                return;
+                XElement? parent = path.Parent;
 
-            path.Remove();
-            parent.Add(path);
+                if (parent == null)
+                    continue;
+
+                path.Remove();
+                parent.Add(path);
+            }
         }
 
         private void CaricaPaths()

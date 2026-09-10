@@ -1,5 +1,6 @@
 ﻿using CiociariaGuerraBot_Console;
 using System.Configuration;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 Console.WriteLine("START");
@@ -12,15 +13,14 @@ MapRenderer renderer = new(ConfigurationManager.AppSettings["FileMappa"] ?? Stri
 List<Comune> comuni = CaricaComuni();
 Console.WriteLine("Lista comuni caricata.");
 
-var TEST_EXTRACTIONS = new int[] { 6, 6, 71, 53, 53, 53, 53 };
+//HandlerConquista(renderer, indexer++, comuni, 3, 85); // alatri +1 (veroli)
+//HandlerConquista(renderer, indexer++, comuni, 3, 29);  // alatri +2 (collepardo)
+//HandlerConquista(renderer, indexer++, comuni, 3, 87);  // alatri +3 (vico) --> alatri ha 4 territori
+//HandlerConquista(renderer, indexer++, comuni, 42, 87); // guarcino +1 (vico)
+//HandlerConquista(renderer, indexer++, comuni, 42, 29); // guarcino +2 (collepardo)
+//HandlerConquista(renderer, indexer++, comuni, 33, 3); // ferentino conquista alatri (alatri vive ancora a veroli)
+//HandlerConquista(renderer, indexer++, comuni, 42, 85); // guarcino conquista veroli (alatri è sconfitto)
 
-//renderer.Renderizza(comuni, 0, 3, 85); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 3), comuni.FirstOrDefault(c => c.Id == 85));
-//renderer.Renderizza(comuni, 1, 3, 29); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 3), comuni.FirstOrDefault(c => c.Id == 29));
-//renderer.Renderizza(comuni, 2, 3, 87); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 3), comuni.FirstOrDefault(c => c.Id == 87));
-//renderer.Renderizza(comuni, 3, 42, 87); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 87));
-//renderer.Renderizza(comuni, 4, 42, 29); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 29));
-//renderer.Renderizza(comuni, 5, 42, 85); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 85));
-//renderer.Renderizza(comuni, 6, 42, 3); HandlerConquista(comuni, comuni.FirstOrDefault(c => c.Id == 42), comuni.FirstOrDefault(c => c.Id == 3));
 //return;
 
 var buffer = comuni.Where(x => x.IdProprietario == null).ToList();
@@ -28,7 +28,6 @@ while (buffer.Count > 1)
 {
     Console.WriteLine($"----------------------------------------------------------");
 
-    //int rnd_id = TEST_EXTRACTIONS[indexer];
     int rnd_id = rnd.Next(1, 92);
 
     indexer++;
@@ -41,13 +40,11 @@ while (buffer.Count > 1)
     if (comuneEstratto == null) continue;
     Console.WriteLine($"Id estratto: {rnd_id} | {comuneEstratto.Nome}");
 
-    Comune? comuneAttaccante;
-    if (comuneEstratto.IdProprietario == null)
-        comuneAttaccante = comuneEstratto;
-    else
+    Comune? comuneAttaccante = comuneEstratto;
+    if (comuneEstratto.IdProprietario != null)
         comuneAttaccante = comuni.FirstOrDefault(c => c.Id == comuneEstratto.IdProprietario);
 
-    Console.WriteLine($"Attaccante: {comuneAttaccante?.Nome}");
+    Console.WriteLine($"Attaccante: {comuneAttaccante?.Id} | {comuneAttaccante?.Nome}");
 
     Comune? comuneConquistato = comuni
     .Where(c => c.Id != comuneAttaccante?.Id)
@@ -55,38 +52,14 @@ while (buffer.Count > 1)
     .OrderBy(c => comuneAttaccante?.DistanzaDa(c))
     .FirstOrDefault();
 
-    #region Genera Testo
-    Console.Write($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {comuneAttaccante?.Nome} ha conquistato il territorio di {comuneConquistato?.Nome}");
-
-    if (comuneConquistato?.IdProprietario != null)
-    {
-        var oldProprietario = comuni.FirstOrDefault(c => c.Id == comuneConquistato.IdProprietario);
-        Console.WriteLine($", precedentemente appartenente al Comune di {oldProprietario?.Nome}.");
-
-        bool nonHaPiuTerritori = !comuni.Any(c => c.Id != comuneConquistato.Id && c.IdProprietario == oldProprietario?.Id);
-        if (nonHaPiuTerritori)
-            Console.WriteLine($"Il Comune di {oldProprietario?.Nome} è stato completamente sconfitto."); // revisionare
-    }
-    else
-    {
-        Console.WriteLine($".\nIl Comune di {comuneConquistato?.Nome} è stato completamente sconfitto."); // revisionare
-    }
-    #endregion
-
-
     if (comuneAttaccante != null && comuneConquistato != null)
     {
-        HandlerConquista(comuni, comuneAttaccante, comuneConquistato);
+        HandlerConquista(renderer, indexer, comuni, comuneAttaccante.Id, comuneConquistato.Id);
 
         // RICARICA IL BUFFER
         buffer = comuni.Where(x => x.IdProprietario == null).ToList();
         Console.WriteLine($"{buffer.Count} {(buffer.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
-
-
-        // RENDERIZZA LA MAPPA
-        renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id);
     }
-
 }
 
 Console.WriteLine($"----------------------------------------------------------");
@@ -100,26 +73,33 @@ Console.ReadKey();
 
 
 
-static void HandlerConquista(List<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato)
+static void HandlerConquista(MapRenderer renderer, int indexer, List<Comune> comuni, int comuneAttaccanteId, int comuneConquistatoId)
 {
+    Comune? comuneAttaccante = comuni.FirstOrDefault(c => c.Id == comuneAttaccanteId);
+    Comune? comuneConquistato = comuni.FirstOrDefault(c => c.Id == comuneConquistatoId);
+
+    if (comuneAttaccante == null || comuneConquistato == null)
+        return;
+
     // SALVO IL VECCHIO PROPRIETARIO
-    Comune? oldProprietario = null;
+    Comune oldProprietario;
     if (comuneConquistato.IdProprietario != null)
-        oldProprietario = comuni.FirstOrDefault(c => c.Id == comuneConquistato.IdProprietario);
+        oldProprietario = comuni.First(c => c.Id == comuneConquistato.IdProprietario);
+    else
+        oldProprietario = comuneConquistato;
 
     // CAMBIO PROPRIETARIO
     comuneConquistato.IdProprietario = comuneAttaccante.Id;
+
+    // GENERA TESTO
+    GeneraTesto(comuni, comuneAttaccante, comuneConquistato, oldProprietario);
 
     // RICALCOLO IL BARICENTRO DEL NUOVO PROPRIETARIO
     RicalcolaBaricentro(comuneAttaccante, comuni);
 
     // RICALCOLO IL BARICENTRO DEL VECCHIO PROPRIETARIO
-    if (oldProprietario != null)
-    {
-        RicalcolaBaricentro(oldProprietario, comuni);
-    }
+    RicalcolaBaricentro(oldProprietario, comuni);
 
-    // DEBUG
     foreach (Comune c in comuni)
     {
         var isexpanded = !(
@@ -138,6 +118,30 @@ static void HandlerConquista(List<Comune> comuni, Comune comuneAttaccante, Comun
             $"Y_t {c.BaricentroTerritorioY,8:F2} | " +
             $"{(isexpanded ? "Y" : "False")}"
         );
+    }
+
+    // RENDERIZZA LA MAPPA
+    renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id);
+
+}
+
+static void GeneraTesto(List<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato, Comune? oldProprietario)
+{
+    Console.Write($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {comuneAttaccante.Nome} ha conquistato il territorio di {comuneConquistato.Nome}");
+
+    if (oldProprietario != null)
+    {
+        Console.WriteLine($", precedentemente appartenente al Comune di {oldProprietario.Nome}.");
+
+        bool haAncoraTerritori = comuni.Any(c => c.IdProprietario == oldProprietario.Id);
+        if (!haAncoraTerritori)
+        {
+            Console.WriteLine($"Il Comune di {oldProprietario.Nome} è stato completamente sconfitto.");
+        }
+    }
+    else
+    {
+        Console.WriteLine($". Il Comune di {comuneConquistato.Nome} è stato completamente sconfitto.");
     }
 }
 
