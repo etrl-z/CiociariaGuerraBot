@@ -10,7 +10,7 @@ Random rnd = new Random();
 
 MapRenderer renderer = new(ConfigurationManager.AppSettings["FileMappa"] ?? String.Empty);
 
-List<Comune> comuni = CaricaComuni();
+List<Comune> comuni = renderer._comuni;
 Console.WriteLine("Lista comuni caricata.");
 
 //renderer.Renderizza(comuni, 0);
@@ -167,19 +167,3 @@ static void RicalcolaBaricentro(Comune proprietario, List<Comune> comuni)
     proprietario.BaricentroTerritorioY = territori.Average(c => c.BaricentroOrigY);
 }
 
-static List<Comune> CaricaComuni()
-{
-    string file = ConfigurationManager.AppSettings["FileComuni"] ?? String.Empty;
-
-    XDocument xml = XDocument.Load(file);
-
-    return xml
-        .Descendants("Comune")
-        .Select(x => new Comune(
-            (int)x.Attribute("id")!,
-            (string)x.Attribute("nome")!,
-            (double)x.Attribute("x")!,
-            (double)x.Attribute("y")!
-        ))
-        .ToList();
-}

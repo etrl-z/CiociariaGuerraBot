@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -19,6 +20,13 @@ namespace CiociariaGuerraBot.ConsoleApp
         private readonly Dictionary<int, XElement> _paths = new();
         private readonly Dictionary<int, XElement> _texts = new();
         private readonly Dictionary<string, string> _coloriCss = new();
+        public readonly List<Comune> _comuni = new();
+
+        // Coefficienti della trasformazione affine CAD -> SVG
+        private const double ScaleX = 2.834809;
+        private const double ScaleY = -2.834698;
+        private const double OffsetX = 510.7850;
+        private const double OffsetY = 715.5535;
 
         public MapRenderer(string fileSvg)
         {
@@ -45,10 +53,13 @@ namespace CiociariaGuerraBot.ConsoleApp
             if (_nomiComuni == null)
                 throw new Exception("Gruppo 'NomiComuni' non trovato nell'SVG.");
 
-            // Indicizza tutti i path per id
-            CaricaPaths();
+            // Carica gli oggetti Comune nella lista
+            CaricaComuni();
 
-            // Indicizza tutti i nomi per id
+            // Indicizza tutti i path per id
+            CaricaPathsComuni();
+
+            // Indicizza tutti i text per id
             CaricaNomiComuni();
 
             // Indicizza tutti i colori del CSS per id
@@ -189,7 +200,37 @@ namespace CiociariaGuerraBot.ConsoleApp
             }
         }
 
-        private void CaricaPaths()
+        private void CaricaComuni()
+        {
+            foreach (XElement path in _territori!.Descendants(ns + "path"))
+            {
+                string? idAttr = path.Attribute("id")?.Value;
+                string? nomeAttr = path.Attribute("name")?.Value;
+                string? xCadAttr = path.Attribute("x_cad")?.Value;
+                string? yCadAttr = path.Attribute("y_cad")?.Value;
+
+                if (idAttr == null || !int.TryParse(idAttr, out int id))
+                    continue;
+
+                if (xCadAttr == null || yCadAttr == null ||
+                    !double.TryParse(xCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double xCad) ||
+                    !double.TryParse(yCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double yCad))
+                {
+                    Console.WriteLine($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({nomeAttr})");
+                    continue;
+                }
+
+                double xSvg = OffsetX + ScaleX * xCad;
+                double ySvg = OffsetY + ScaleY * yCad;
+
+                Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg);
+                _comuni.Add(comune);
+            }
+
+            Console.WriteLine($"Caricati {_comuni.Count} Comuni.");
+        }
+
+        private void CaricaPathsComuni()
         {
             foreach (XElement path in _territori!.Descendants(ns + "path"))
             {
