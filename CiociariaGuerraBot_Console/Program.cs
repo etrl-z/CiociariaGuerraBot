@@ -13,16 +13,6 @@ MapRenderer renderer = new(ConfigurationManager.AppSettings["FileMappa"] ?? Stri
 List<Comune> comuni = CaricaComuni();
 Console.WriteLine("Lista comuni caricata.");
 
-//HandlerConquista(renderer, indexer++, comuni, 3, 85); // alatri +1 (veroli)
-//HandlerConquista(renderer, indexer++, comuni, 3, 29);  // alatri +2 (collepardo)
-//HandlerConquista(renderer, indexer++, comuni, 3, 87);  // alatri +3 (vico) --> alatri ha 4 territori
-//HandlerConquista(renderer, indexer++, comuni, 42, 87); // guarcino +1 (vico)
-//HandlerConquista(renderer, indexer++, comuni, 42, 29); // guarcino +2 (collepardo)
-//HandlerConquista(renderer, indexer++, comuni, 33, 3); // ferentino conquista alatri (alatri vive ancora a veroli)
-//HandlerConquista(renderer, indexer++, comuni, 42, 85); // guarcino conquista veroli (alatri è sconfitto)
-
-//return;
-
 List<int> comuniInGara;
 while (true)
 {
@@ -32,8 +22,7 @@ while (true)
 
     Console.WriteLine($"----------------------------------------------------------");
 
-    int rnd_id = 38;
-    //int rnd_id = rnd.Next(1, 92);
+    int rnd_id = rnd.Next(1, 92);
 
     indexer++;
 
