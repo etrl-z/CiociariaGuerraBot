@@ -23,17 +23,22 @@ Console.WriteLine("Lista comuni caricata.");
 
 //return;
 
-var buffer = comuni.Where(x => x.IdProprietario == null).ToList();
-while (buffer.Count > 1)
+List<int> comuniInGara;
+while (true)
 {
+    comuniInGara = comuni.Select(c => c.IdProprietario ?? c.Id).Distinct().ToList();
+    if (comuniInGara.Count <= 1)
+        break;
+
     Console.WriteLine($"----------------------------------------------------------");
 
-    int rnd_id = rnd.Next(1, 92);
+    int rnd_id = 38;
+    //int rnd_id = rnd.Next(1, 92);
 
     indexer++;
 
     Console.WriteLine($"TURNO {indexer}");
-    Console.WriteLine($"{buffer.Count} Comuni in gara");
+    Console.WriteLine($"{comuniInGara.Count} Comuni in gara");
 
     Comune? comuneEstratto = comuni.FirstOrDefault(c => c.Id == rnd_id);
 
@@ -56,21 +61,26 @@ while (buffer.Count > 1)
     {
         HandlerConquista(renderer, indexer, comuni, comuneAttaccante.Id, comuneConquistato.Id);
 
-        // RICARICA IL BUFFER
-        buffer = comuni.Where(x => x.IdProprietario == null).ToList();
-        Console.WriteLine($"{buffer.Count} {(buffer.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
+        // RICARICA IL BUFFER DEI COMUNI IN GARA
+        comuniInGara = comuni.Select(c => c.IdProprietario ?? c.Id).Distinct().ToList();
+        Console.WriteLine($"{comuniInGara.Count} {(comuniInGara.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
     }
 }
 
 Console.WriteLine($"----------------------------------------------------------");
 
-var winner = buffer.FirstOrDefault();
+var winnerId = comuniInGara.FirstOrDefault();
+Comune? winner = comuni.FirstOrDefault(c => c.Id == winnerId);
 
-if (winner == null) return;
-Console.WriteLine($"Ha vinto {winner.Nome}!");
+if (winner != null)
+{
+    renderer.Renderizza(comuni, ++indexer, winner.Id);
 
-Console.ReadKey();
+    Console.WriteLine($"{winner?.Nome} ha interamente conquistato la Ciociaria.");
+    Console.WriteLine($"Tutti i territori sono stati unificati e formano ora il Comune di {winner?.Nome}.");
 
+    Console.ReadKey();
+}
 
 
 static void HandlerConquista(MapRenderer renderer, int indexer, List<Comune> comuni, int comuneAttaccanteId, int comuneConquistatoId)

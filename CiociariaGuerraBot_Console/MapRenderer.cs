@@ -42,7 +42,7 @@ namespace CiociariaGuerraBot_Console
         }
 
 
-        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idConquistato, int? idOldProprietario)
+        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idConquistato = 0, int? idOldProprietario = 0)
         {
             foreach (Comune comune in comuni)
             {
