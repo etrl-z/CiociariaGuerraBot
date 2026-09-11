@@ -1,4 +1,4 @@
-﻿using CiociariaGuerraBot_Console;
+﻿using CiociariaGuerraBot.ConsoleApp;
 using System.Configuration;
 using System.Diagnostics;
 using System.Xml.Linq;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CiociariaGuerraBot_Console
+namespace CiociariaGuerraBot.ConsoleApp
 {
     internal class Comune
     {

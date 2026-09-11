@@ -3,9 +3,8 @@ using System.Configuration;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace CiociariaGuerraBot_Console
+namespace CiociariaGuerraBot.ConsoleApp
 {
     class MapRenderer
     {

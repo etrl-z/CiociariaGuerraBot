@@ -3,14 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiociariaGuerraBot_Console", "CiociariaGuerraBot_Console\CiociariaGuerraBot_Console.csproj", "{7ABC18E1-613E-4095-973F-9A73EC19DECD}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementi di soluzione", "Elementi di soluzione", "{9DF70304-0A22-CE1E-AA12-D5904EE55694}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{9DF70304-0A22-CE1E-AA12-D5904EE55694}"
 	ProjectSection(SolutionItems) = preProject
 		Models\Coordinate_Comuni.xml = Models\Coordinate_Comuni.xml
-		Models\Mappa_vettori.ai = Models\Mappa_vettori.ai
 		Models\Mappa_vettori.svg = Models\Mappa_vettori.svg
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiociariaGuerraBot.ConsoleApp", "CiociariaGuerraBot.ConsoleApp\CiociariaGuerraBot.ConsoleApp.csproj", "{1E36A152-00FE-5278-D841-B11689CBC6AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +17,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7ABC18E1-613E-4095-973F-9A73EC19DECD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7ABC18E1-613E-4095-973F-9A73EC19DECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7ABC18E1-613E-4095-973F-9A73EC19DECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7ABC18E1-613E-4095-973F-9A73EC19DECD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
