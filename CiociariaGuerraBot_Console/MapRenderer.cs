@@ -23,9 +23,6 @@ namespace CiociariaGuerraBot_Console
             // Carica SVG
             _svg = XDocument.Load(_fileSvg);
 
-            // Indicizza tutti i colori del CSS per id
-            CaricaColoriCss();
-
             // Trova il gruppo Territori
             _territori = _svg
                 .Descendants(ns + "g")
@@ -38,24 +35,25 @@ namespace CiociariaGuerraBot_Console
             // Indicizza tutti i path per id
             CaricaPaths();
 
+            // Indicizza tutti i colori del CSS per id
+            CaricaColoriCss();
+
             Directory.CreateDirectory(_cartellaOutput);
         }
 
 
-        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idConquistato)
+        public void Renderizza(List<Comune> comuni, int turno, int idAttaccante, int idConquistato, int? idOldProprietario)
         {
             foreach (Comune comune in comuni)
             {
                 if (!_paths.TryGetValue(comune.Id, out XElement? path))
                 {
                     Console.WriteLine($"ATTENZIONE: territorio non trovato nell'SVG: {comune.Nome}");
-
                     continue;
                 }
 
-                // SETTA COLORE DEL TERRITORIO --> REVISIONARE
+                // SETTA COLORE DEL TERRITORIO
                 string colore;
-
                 if (comune.IdProprietario == null)
                 {
                     colore = GetColore(comune.Id);
@@ -65,31 +63,30 @@ namespace CiociariaGuerraBot_Console
                     colore = GetColore(comune.IdProprietario.Value);
                 }
 
-                // SETTA BORDO --> REVISIONARE
+                if (comune.Id == idConquistato)
+                {
+                    if (idOldProprietario != null)
+                        colore = GetColore((int)idOldProprietario);
+                }
+
+                // SETTA BORDO
                 string stroke = "#000000";
                 string strokeWidth = "1";
 
-                if (comune.Id == idAttaccante)
+                if (comune.Id == idAttaccante || comune.IdProprietario == idAttaccante)
                 {
-                    stroke = "#00FF00";
-                    strokeWidth = "4";
-                }
-
-                if (comune.IdProprietario == idAttaccante)
-                {
-                    stroke = "#00FF00";
+                    stroke = "#00FF00"; // VERDE
                     strokeWidth = "4";
                 }
 
                 if (comune.Id == idConquistato)
                 {
-                    stroke = "#FF0000";
+                    stroke = "#FF0000"; // ROSSO
                     strokeWidth = "4";
                 }
-
-                if (comune.IdProprietario == idConquistato)
+                else if (comune.Id == idOldProprietario || comune.IdProprietario == idOldProprietario)
                 {
-                    stroke = "#0000FF";
+                    stroke = "#0000FF"; // BLU
                     strokeWidth = "4";
                 }
 
@@ -100,9 +97,13 @@ namespace CiociariaGuerraBot_Console
                 );
             }
 
-            // PORTA ATTACCANTE E CONQUISTATO IN PRIMO PIANO
-            PortaInPrimoPiano(comuni, idAttaccante);
-            PortaInPrimoPiano(comuni, idConquistato);
+            // RENDERIZZA I TERRITORI NELL'ORDINE:
+            // 1. CONQUISTATO
+            // 2. ATTACCANTE
+            // 3. VECCHIO PROPRIETARIO
+            // 4. ecc..
+
+            OrdinaTerritori(comuni, idOldProprietario, idAttaccante, idConquistato);
 
 
             // OUTPUT IMG
@@ -116,14 +117,26 @@ namespace CiociariaGuerraBot_Console
             Console.WriteLine($"Mappa salvata: {percorsoOutput}");
         }
 
-        private void PortaInPrimoPiano(List<Comune> comuni, int idProprietario)
+        private void OrdinaTerritori(List<Comune> comuni, int? idOldProprietario, int idAttaccante, int idConquistato)
         {
-            foreach (Comune comune in comuni)
-            {
-                if (comune.Id != idProprietario && comune.IdProprietario != idProprietario)
-                    continue;
+            List<int> ordine = [];
 
-                if (!_paths.TryGetValue(comune.Id, out XElement? path))
+            if (idOldProprietario != null)
+            {
+                ordine.AddRange(
+                    comuni.Where(c => (c.Id == idOldProprietario || c.IdProprietario == idOldProprietario) && c.Id != idConquistato).Select(c => c.Id)
+                );
+            }
+
+            ordine.AddRange(
+                comuni.Where(c => (c.Id == idAttaccante || c.IdProprietario == idAttaccante) && c.Id != idConquistato).Select(c => c.Id)
+            );
+
+            ordine.Add(idConquistato);
+
+            foreach (int id in ordine)
+            {
+                if (!_paths.TryGetValue(id, out XElement? path))
                     continue;
 
                 XElement? parent = path.Parent;

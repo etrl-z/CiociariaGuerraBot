@@ -100,28 +100,10 @@ static void HandlerConquista(MapRenderer renderer, int indexer, List<Comune> com
     // RICALCOLO IL BARICENTRO DEL VECCHIO PROPRIETARIO
     RicalcolaBaricentro(oldProprietario, comuni);
 
-    foreach (Comune c in comuni)
-    {
-        var isexpanded = !(
-        c.BaricentroOrigX == c.BaricentroTerritorioX &&
-        c.BaricentroOrigY == c.BaricentroTerritorioY);
-
-        var proprietario = comuni.FirstOrDefault(x => x.Id == c.IdProprietario);
-
-        Console.WriteLine(
-            $"{c.Id,-2} | " +
-            $"{c.Nome,-28} | " +
-            $"P: {proprietario?.Nome,-28} | " +
-            $"X {c.BaricentroOrigX,8:F2} | " +
-            $"Y {c.BaricentroOrigY,8:F2} | " +
-            $"X_t {c.BaricentroTerritorioX,8:F2} | " +
-            $"Y_t {c.BaricentroTerritorioY,8:F2} | " +
-            $"{(isexpanded ? "Y" : "False")}"
-        );
-    }
+    GeneraReport(comuni);
 
     // RENDERIZZA LA MAPPA
-    renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id);
+    renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id, oldProprietario.Id);
 
 }
 
@@ -142,6 +124,29 @@ static void GeneraTesto(List<Comune> comuni, Comune comuneAttaccante, Comune com
     else
     {
         Console.WriteLine($". Il Comune di {comuneConquistato.Nome} è stato completamente sconfitto.");
+    }
+}
+
+static void GeneraReport(List<Comune> comuni)
+{
+    foreach (Comune c in comuni)
+    {
+        var isexpanded = !(
+        c.BaricentroOrigX == c.BaricentroTerritorioX &&
+        c.BaricentroOrigY == c.BaricentroTerritorioY);
+
+        var proprietario = comuni.FirstOrDefault(x => x.Id == c.IdProprietario);
+
+        Console.WriteLine(
+            $"{c.Id,-2} | " +
+            $"{c.Nome,-28} | " +
+            $"P: {proprietario?.Nome,-28} | " +
+            $"X {c.BaricentroOrigX,8:F2} | " +
+            $"Y {c.BaricentroOrigY,8:F2} | " +
+            $"X_t {c.BaricentroTerritorioX,8:F2} | " +
+            $"Y_t {c.BaricentroTerritorioY,8:F2} | " +
+            $"{(isexpanded ? "Y" : "False")}"
+        );
     }
 }
 
