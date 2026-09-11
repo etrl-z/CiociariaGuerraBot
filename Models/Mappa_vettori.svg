@@ -94,6 +94,18 @@
 		.s88 { fill: #0d1f6d;stroke: #000000;stroke-miterlimit:10 }
 		.s89 { fill: #465473;stroke: #000000;stroke-miterlimit:10 }
 		.s90 { fill: #2bc84b;stroke: #000000;stroke-miterlimit:10 }
+		.nome-comune {
+		font-family: "Trebuchet MS", "Verdana", sans-serif;
+		font-size: 11px;
+		font-weight: 700;
+		fill: #2c2c2c;
+		text-anchor: middle;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		paint-order: stroke;
+		stroke: #fefefe;
+		stroke-width: 2.5px;
+		}
 	</style>
 	<g id="Background">
 		<use id="Background" href="#img1" transform="matrix(1,0,0,1,0,0)"/>
@@ -192,96 +204,96 @@
 		<path id="91" x_cad="301.29" y_cad="-67.63" name="VITICUSO" class="s90" d="m1426 901q0 1 0 2c-3.73 1.48-7.64 1.96-11.42 2.1-4.16 2.58-2.6 7.68-4.82 10.5-1.93 0.96-3.44 1.72-4.88 2.44-2.16-1.34-4.08-1.62-6.37-0.22-1.06 0.66-2.64 0.95-3.93 1.35-3.06 0.96-6.07 0.7-9.1 0.85-1.72 1.73-3.26 3.56-4.72 5.51-0.88 1.18-0.67 2.4-1.2 3.55-1.44 3.09-2.99 5.93-6.53 6.88-1.1 0.3-1.51 1.2-2.26 1.79-0.89 0.71-1.6 1.89-2.59 2.17-2.65 0.78-4.29 2.75-6.14 4.54-0.2 1.86 0.43 3.9-1.04 5.54q-1.5 0-3 0c-0.67-1.55-2.66-1.53-3.5-2.93-0.14-0.22-1 0.09-1.42-0.09-4.12-1.76-8.49-2.74-12.77-3.98-0.17 0-0.36-0.05-0.49 0.01-0.28 0.13-0.57 0.27-0.8 0.48-3.66 3.33-7.02 0.26-10.48-0.49-0.83-2.72-3.5-2.47-5.43-3.48-0.93-0.49-2.1-0.63-2.81-1.67-1.3-1.91-4.31-2.14-4.85-4.85-3.49-1.26-5.06-4.57-7.45-7q0-1.5 0-3c2.26-1.15 3.53-3.4 5.56-4.97 0.53 0 1.19 0 1.88 0 2.57-2.37 4.95-4.81 8.25-6.47 3.2-1.62 6.71-3.67 8.22-7.26 1.05-2.51 2.93-4.4 3.88-6.72-1.61-2.75-0.4-5.65-0.81-8.1 3.87-3.61 8.47-4.29 12.77-5.38 4.22-1.07 8.41-3.81 12.93-1.28 0.48-0.48 0.83-0.83 1.36-1.36 0-1.94 0-4.06 0-6.06 1.97-1.33 2.17-3.79 4-5 0-1.67 0-3.32 0-5.12 2.21-1.03 3.68-3.49 6.55-3.37 0.27-1.32 2.4-0.27 2.41-1.91q3 0 6 0c1.74 1.57 3.44 3.18 5.22 4.7 1.7 1.45 3.48 2.86 5.27 4.12 3.8 2.67 4.93 3.33 6.21 5.87-1.13 1.41-0.61 2.44 0.18 3.89 0.69 1.26 1.55 2.7 1.3 3.75 3.16 2.56 6.5 4.09 8 7.54 0.96 0.1 1.74 0.19 2.46 0.27 1.58 1.58 2.93 3.36 4.67 4.56 2 1.37 4.44 2.25 6.65 3.07 2.07 0.77 3.53 1.89 5.04 3.23z" />
 	</g>
 	<g id="NomiComuni">
-		<text id="1" font-size="15" fill="black" text-anchor="middle" style="display:none">Acquafondata</text>
-		<text id="2" font-size="15" fill="black" text-anchor="middle" style="display:none">Acuto</text>
-		<text id="3" font-size="15" fill="black" text-anchor="middle" style="display:none">Alatri</text>
-		<text id="4" font-size="15" fill="black" text-anchor="middle" style="display:none">Alvito</text>
-		<text id="5" font-size="15" fill="black" text-anchor="middle" style="display:none">Amaseno</text>
-		<text id="6" font-size="15" fill="black" text-anchor="middle" style="display:none">Anagni</text>
-		<text id="7" font-size="15" fill="black" text-anchor="middle" style="display:none">Aquino</text>
-		<text id="8" font-size="15" fill="black" text-anchor="middle" style="display:none">Arce</text>
-		<text id="9" font-size="15" fill="black" text-anchor="middle" style="display:none">Arnara</text>
-		<text id="10" font-size="15" fill="black" text-anchor="middle" style="display:none">Arpino</text>
-		<text id="11" font-size="15" fill="black" text-anchor="middle" style="display:none">Atina</text>
-		<text id="12" font-size="15" fill="black" text-anchor="middle" style="display:none">Ausonia</text>
-		<text id="13" font-size="15" fill="black" text-anchor="middle" style="display:none">Belmonte Castello</text>
-		<text id="14" font-size="15" fill="black" text-anchor="middle" style="display:none">Boville Ernica</text>
-		<text id="15" font-size="15" fill="black" text-anchor="middle" style="display:none">Broccostella</text>
-		<text id="16" font-size="15" fill="black" text-anchor="middle" style="display:none">Campoli Appennino</text>
-		<text id="17" font-size="15" fill="black" text-anchor="middle" style="display:none">Casalattico</text>
-		<text id="18" font-size="15" fill="black" text-anchor="middle" style="display:none">Casalvieri</text>
-		<text id="19" font-size="15" fill="black" text-anchor="middle" style="display:none">Cassino</text>
-		<text id="20" font-size="15" fill="black" text-anchor="middle" style="display:none">Castelliri</text>
-		<text id="21" font-size="15" fill="black" text-anchor="middle" style="display:none">Castelnuovo Parano</text>
-		<text id="22" font-size="15" fill="black" text-anchor="middle" style="display:none">Castro dei Volsci</text>
-		<text id="23" font-size="15" fill="black" text-anchor="middle" style="display:none">Castrocielo</text>
-		<text id="24" font-size="15" fill="black" text-anchor="middle" style="display:none">Ceccano</text>
-		<text id="25" font-size="15" fill="black" text-anchor="middle" style="display:none">Ceprano</text>
-		<text id="26" font-size="15" fill="black" text-anchor="middle" style="display:none">Cervaro</text>
-		<text id="27" font-size="15" fill="black" text-anchor="middle" style="display:none">Colfelice</text>
-		<text id="28" font-size="15" fill="black" text-anchor="middle" style="display:none">Colle San Magno</text>
-		<text id="29" font-size="15" fill="black" text-anchor="middle" style="display:none">Collepardo</text>
-		<text id="30" font-size="15" fill="black" text-anchor="middle" style="display:none">Coreno Ausonio</text>
-		<text id="31" font-size="15" fill="black" text-anchor="middle" style="display:none">Esperia</text>
-		<text id="32" font-size="15" fill="black" text-anchor="middle" style="display:none">Falvaterra</text>
-		<text id="33" font-size="15" fill="black" text-anchor="middle" style="display:none">Ferentino</text>
-		<text id="34" font-size="15" fill="black" text-anchor="middle" style="display:none">Filettino</text>
-		<text id="35" font-size="15" fill="black" text-anchor="middle" style="display:none">Fiuggi</text>
-		<text id="36" font-size="15" fill="black" text-anchor="middle" style="display:none">Fontana Liri</text>
-		<text id="37" font-size="15" fill="black" text-anchor="middle" style="display:none">Fontechiari</text>
-		<text id="38" font-size="15" fill="black" text-anchor="middle" style="display:none">FROSINONE</text>
-		<text id="39" font-size="15" fill="black" text-anchor="middle" style="display:none">Fumone</text>
-		<text id="40" font-size="15" fill="black" text-anchor="middle" style="display:none">Gallinaro</text>
-		<text id="41" font-size="15" fill="black" text-anchor="middle" style="display:none">Giuliano di Roma</text>
-		<text id="42" font-size="15" fill="black" text-anchor="middle" style="display:none">Guarcino</text>
-		<text id="43" font-size="15" fill="black" text-anchor="middle" style="display:none">Isola del Liri</text>
-		<text id="44" font-size="15" fill="black" text-anchor="middle" style="display:none">Monte San Giovanni Campano</text>
-		<text id="45" font-size="15" fill="black" text-anchor="middle" style="display:none">Morolo</text>
-		<text id="46" font-size="15" fill="black" text-anchor="middle" style="display:none">Paliano</text>
-		<text id="47" font-size="15" fill="black" text-anchor="middle" style="display:none">Pastena</text>
-		<text id="48" font-size="15" fill="black" text-anchor="middle" style="display:none">Patrica</text>
-		<text id="49" font-size="15" fill="black" text-anchor="middle" style="display:none">Pescosolido</text>
-		<text id="50" font-size="15" fill="black" text-anchor="middle" style="display:none">Picinisco</text>
-		<text id="51" font-size="15" fill="black" text-anchor="middle" style="display:none">Pico</text>
-		<text id="52" font-size="15" fill="black" text-anchor="middle" style="display:none">Piedimonte San Germano</text>
-		<text id="53" font-size="15" fill="black" text-anchor="middle" style="display:none">Piglio</text>
-		<text id="54" font-size="15" fill="black" text-anchor="middle" style="display:none">Pignataro Interamna</text>
-		<text id="55" font-size="15" fill="black" text-anchor="middle" style="display:none">Pofi</text>
-		<text id="56" font-size="15" fill="black" text-anchor="middle" style="display:none">Pontecorvo</text>
-		<text id="57" font-size="15" fill="black" text-anchor="middle" style="display:none">Posta Fibreno</text>
-		<text id="58" font-size="15" fill="black" text-anchor="middle" style="display:none">Ripi</text>
-		<text id="59" font-size="15" fill="black" text-anchor="middle" style="display:none">Rocca d'Arce</text>
-		<text id="60" font-size="15" fill="black" text-anchor="middle" style="display:none">Roccasecca</text>
-		<text id="61" font-size="15" fill="black" text-anchor="middle" style="display:none">San Biagio Saracinisco</text>
-		<text id="62" font-size="15" fill="black" text-anchor="middle" style="display:none">San Donato Val di Comino</text>
-		<text id="63" font-size="15" fill="black" text-anchor="middle" style="display:none">San Giorgio a Liri</text>
-		<text id="64" font-size="15" fill="black" text-anchor="middle" style="display:none">San Giovanni Incarico</text>
-		<text id="65" font-size="15" fill="black" text-anchor="middle" style="display:none">San Vittore del Lazio</text>
-		<text id="66" font-size="15" fill="black" text-anchor="middle" style="display:none">Sant'Ambrogio sul Garigliano</text>
-		<text id="67" font-size="15" fill="black" text-anchor="middle" style="display:none">Sant'Andrea del Garigliano</text>
-		<text id="68" font-size="15" fill="black" text-anchor="middle" style="display:none">Sant'Apollinare</text>
-		<text id="69" font-size="15" fill="black" text-anchor="middle" style="display:none">Sant'Elia Fiumerapido</text>
-		<text id="70" font-size="15" fill="black" text-anchor="middle" style="display:none">Santopadre</text>
-		<text id="71" font-size="15" fill="black" text-anchor="middle" style="display:none">Serrone</text>
-		<text id="72" font-size="15" fill="black" text-anchor="middle" style="display:none">Settefrati</text>
-		<text id="73" font-size="15" fill="black" text-anchor="middle" style="display:none">Sgurgola</text>
-		<text id="74" font-size="15" fill="black" text-anchor="middle" style="display:none">Sora</text>
-		<text id="75" font-size="15" fill="black" text-anchor="middle" style="display:none">Strangolagalli</text>
-		<text id="76" font-size="15" fill="black" text-anchor="middle" style="display:none">Supino</text>
-		<text id="77" font-size="15" fill="black" text-anchor="middle" style="display:none">Terelle</text>
-		<text id="78" font-size="15" fill="black" text-anchor="middle" style="display:none">Torre Cajetani</text>
-		<text id="79" font-size="15" fill="black" text-anchor="middle" style="display:none">Torrice</text>
-		<text id="80" font-size="15" fill="black" text-anchor="middle" style="display:none">Trevi nel Lazio</text>
-		<text id="81" font-size="15" fill="black" text-anchor="middle" style="display:none">Trivigliano</text>
-		<text id="82" font-size="15" fill="black" text-anchor="middle" style="display:none">Vallecorsa</text>
-		<text id="83" font-size="15" fill="black" text-anchor="middle" style="display:none">Vallemaio</text>
-		<text id="84" font-size="15" fill="black" text-anchor="middle" style="display:none">Vallerotonda</text>
-		<text id="85" font-size="15" fill="black" text-anchor="middle" style="display:none">Veroli</text>
-		<text id="86" font-size="15" fill="black" text-anchor="middle" style="display:none">Vicalvi</text>
-		<text id="87" font-size="15" fill="black" text-anchor="middle" style="display:none">Vico nel Lazio</text>
-		<text id="88" font-size="15" fill="black" text-anchor="middle" style="display:none">Villa Latina</text>
-		<text id="89" font-size="15" fill="black" text-anchor="middle" style="display:none">Villa Santa Lucia</text>
-		<text id="90" font-size="15" fill="black" text-anchor="middle" style="display:none">Villa Santo Stefano</text>
-		<text id="91" font-size="15" fill="black" text-anchor="middle" style="display:none">Viticuso</text>
+		<text id="1">Acquafondata</text>
+		<text id="2">Acuto</text>
+		<text id="3">Alatri</text>
+		<text id="4">Alvito</text>
+		<text id="5">Amaseno</text>
+		<text id="6">Anagni</text>
+		<text id="7">Aquino</text>
+		<text id="8">Arce</text>
+		<text id="9">Arnara</text>
+		<text id="10">Arpino</text>
+		<text id="11">Atina</text>
+		<text id="12">Ausonia</text>
+		<text id="13">Belmonte Castello</text>
+		<text id="14">Boville Ernica</text>
+		<text id="15">Broccostella</text>
+		<text id="16">Campoli Appennino</text>
+		<text id="17">Casalattico</text>
+		<text id="18">Casalvieri</text>
+		<text id="19">Cassino</text>
+		<text id="20">Castelliri</text>
+		<text id="21">Castelnuovo Parano</text>
+		<text id="22">Castro dei Volsci</text>
+		<text id="23">Castrocielo</text>
+		<text id="24">Ceccano</text>
+		<text id="25">Ceprano</text>
+		<text id="26">Cervaro</text>
+		<text id="27">Colfelice</text>
+		<text id="28">Colle San Magno</text>
+		<text id="29">Collepardo</text>
+		<text id="30">Coreno Ausonio</text>
+		<text id="31">Esperia</text>
+		<text id="32">Falvaterra</text>
+		<text id="33">Ferentino</text>
+		<text id="34">Filettino</text>
+		<text id="35">Fiuggi</text>
+		<text id="36">Fontana Liri</text>
+		<text id="37">Fontechiari</text>
+		<text id="38">FROSINONE</text>
+		<text id="39">Fumone</text>
+		<text id="40">Gallinaro</text>
+		<text id="41">Giuliano di Roma</text>
+		<text id="42">Guarcino</text>
+		<text id="43">Isola del Liri</text>
+		<text id="44">Monte San Giovanni Campano</text>
+		<text id="45">Morolo</text>
+		<text id="46">Paliano</text>
+		<text id="47">Pastena</text>
+		<text id="48">Patrica</text>
+		<text id="49">Pescosolido</text>
+		<text id="50">Picinisco</text>
+		<text id="51">Pico</text>
+		<text id="52">Piedimonte San Germano</text>
+		<text id="53">Piglio</text>
+		<text id="54">Pignataro Interamna</text>
+		<text id="55">Pofi</text>
+		<text id="56">Pontecorvo</text>
+		<text id="57">Posta Fibreno</text>
+		<text id="58">Ripi</text>
+		<text id="59">Rocca d'Arce</text>
+		<text id="60">Roccasecca</text>
+		<text id="61">San Biagio Saracinisco</text>
+		<text id="62">San Donato Val di Comino</text>
+		<text id="63">San Giorgio a Liri</text>
+		<text id="64">San Giovanni Incarico</text>
+		<text id="65">San Vittore del Lazio</text>
+		<text id="66">Sant'Ambrogio sul Garigliano</text>
+		<text id="67">Sant'Andrea del Garigliano</text>
+		<text id="68">Sant'Apollinare</text>
+		<text id="69">Sant'Elia Fiumerapido</text>
+		<text id="70">Santopadre</text>
+		<text id="71">Serrone</text>
+		<text id="72">Settefrati</text>
+		<text id="73">Sgurgola</text>
+		<text id="74">Sora</text>
+		<text id="75">Strangolagalli</text>
+		<text id="76">Supino</text>
+		<text id="77">Terelle</text>
+		<text id="78">Torre Cajetani</text>
+		<text id="79">Torrice</text>
+		<text id="80">Trevi nel Lazio</text>
+		<text id="81">Trivigliano</text>
+		<text id="82">Vallecorsa</text>
+		<text id="83">Vallemaio</text>
+		<text id="84">Vallerotonda</text>
+		<text id="85">Veroli</text>
+		<text id="86">Vicalvi</text>
+		<text id="87">Vico nel Lazio</text>
+		<text id="88">Villa Latina</text>
+		<text id="89">Villa Santa Lucia</text>
+		<text id="90">Villa Santo Stefano</text>
+		<text id="91">Viticuso</text>
 	</g>
 </svg>

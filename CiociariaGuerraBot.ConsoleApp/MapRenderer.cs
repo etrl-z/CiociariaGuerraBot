@@ -53,9 +53,6 @@ namespace CiociariaGuerraBot.ConsoleApp
             if (_nomiComuni == null)
                 throw new Exception("Gruppo 'NomiComuni' non trovato nell'SVG.");
 
-            // Carica gli oggetti Comune nella lista
-            CaricaComuni();
-
             // Indicizza tutti i path per id
             CaricaPathsComuni();
 
@@ -64,6 +61,9 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             // Indicizza tutti i colori del CSS per id
             CaricaColoriCss();
+
+            // Carica gli oggetti Comune nella lista
+            CaricaComuni();
 
             Directory.CreateDirectory(_cartellaOutput);
         }
@@ -163,6 +163,7 @@ namespace CiociariaGuerraBot.ConsoleApp
         {
             if (_texts.TryGetValue(comune.Id, out XElement? text))
             {
+                text.SetAttributeValue("class", "nome-comune");
                 text.SetAttributeValue("style", "display:inline");
             }
         }
@@ -198,36 +199,6 @@ namespace CiociariaGuerraBot.ConsoleApp
                 path.Remove();
                 parent.Add(path);
             }
-        }
-
-        private void CaricaComuni()
-        {
-            foreach (XElement path in _territori!.Descendants(ns + "path"))
-            {
-                string? idAttr = path.Attribute("id")?.Value;
-                string? nomeAttr = path.Attribute("name")?.Value;
-                string? xCadAttr = path.Attribute("x_cad")?.Value;
-                string? yCadAttr = path.Attribute("y_cad")?.Value;
-
-                if (idAttr == null || !int.TryParse(idAttr, out int id))
-                    continue;
-
-                if (xCadAttr == null || yCadAttr == null ||
-                    !double.TryParse(xCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double xCad) ||
-                    !double.TryParse(yCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double yCad))
-                {
-                    Console.WriteLine($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({nomeAttr})");
-                    continue;
-                }
-
-                double xSvg = OffsetX + ScaleX * xCad;
-                double ySvg = OffsetY + ScaleY * yCad;
-
-                Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg);
-                _comuni.Add(comune);
-            }
-
-            Console.WriteLine($"Caricati {_comuni.Count} Comuni.");
         }
 
         private void CaricaPathsComuni()
@@ -289,6 +260,47 @@ namespace CiociariaGuerraBot.ConsoleApp
             }
 
             Console.WriteLine($"Caricate {_coloriCss.Count} classi CSS.");
+        }
+
+        private void CaricaComuni()
+        {
+            foreach (XElement path in _territori!.Descendants(ns + "path"))
+            {
+                string? idAttr = path.Attribute("id")?.Value;
+                string? nomeAttr = path.Attribute("name")?.Value;
+                string? xCadAttr = path.Attribute("x_cad")?.Value;
+                string? yCadAttr = path.Attribute("y_cad")?.Value;
+
+                if (idAttr == null || !int.TryParse(idAttr, out int id))
+                    continue;
+
+                if (xCadAttr == null || yCadAttr == null ||
+                    !double.TryParse(xCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double xCad) ||
+                    !double.TryParse(yCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double yCad))
+                {
+                    Console.WriteLine($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({nomeAttr})");
+                    continue;
+                }
+
+                double xSvg = OffsetX + ScaleX * xCad;
+                double ySvg = OffsetY + ScaleY * yCad;
+
+                Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg);
+                _comuni.Add(comune);
+
+                // ASSEGNA AI TESTI LE COORDINATE X e Y NORMALIZZATE in SVG
+                if (_texts.TryGetValue(id, out XElement? text))
+                {
+                    text.SetAttributeValue("x", xSvg.ToString(CultureInfo.InvariantCulture));
+                    text.SetAttributeValue("y", ySvg.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    Console.WriteLine($"ATTENZIONE: testo non trovato per id {id} ({nomeAttr})");
+                }
+            }
+
+            Console.WriteLine($"Caricati {_comuni.Count} Comuni.");
         }
 
         private string GetColore(int id)
