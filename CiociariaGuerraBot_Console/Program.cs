@@ -13,6 +13,9 @@ MapRenderer renderer = new(ConfigurationManager.AppSettings["FileMappa"] ?? Stri
 List<Comune> comuni = CaricaComuni();
 Console.WriteLine("Lista comuni caricata.");
 
+//renderer.Renderizza(comuni, 0);
+//return;
+
 List<int> comuniInGara;
 while (true)
 {
