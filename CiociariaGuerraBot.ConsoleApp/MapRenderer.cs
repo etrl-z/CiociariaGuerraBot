@@ -121,15 +121,6 @@ namespace CiociariaGuerraBot.ConsoleApp
                 string stroke = "#000000";
                 string strokeWidth = "1";
 
-                if (idAttaccante != null && (comune.Id == idAttaccante || comune.IdProprietario == idAttaccante))
-                {
-                    stroke = "#00FF00"; // VERDE
-                    strokeWidth = "3";
-
-                    if (comune.Id == idAttaccante)
-                        MostraNome(comune);
-                }
-
                 if (idConquistato != null && comune.Id == idConquistato)
                 {
                     stroke = "#FF0000"; // ROSSO
@@ -138,7 +129,15 @@ namespace CiociariaGuerraBot.ConsoleApp
                     if (comune.Id == idConquistato)
                         MostraNome(comune);
                 }
-                else if (idOldProprietario != null && (comune.Id == idOldProprietario || comune.IdProprietario == idOldProprietario))
+                else if (idAttaccante != null && comune.IdProprietario == idAttaccante)
+                {
+                    stroke = "#00FF00"; // VERDE
+                    strokeWidth = "3";
+
+                    if (comune.Id == idAttaccante)
+                        MostraNome(comune);
+                }
+                else if (idOldProprietario != null && comune.IdProprietario == idOldProprietario)
                 {
                     stroke = "#0000FF"; // BLU
                     strokeWidth = "3";
@@ -292,7 +291,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 double xSvg = OffsetX + ScaleX * xCad;
                 double ySvg = OffsetY + ScaleY * yCad;
 
-                Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg);
+                Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg, id);
                 _comuni.Add(comune);
             }
 

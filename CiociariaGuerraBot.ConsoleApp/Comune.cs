@@ -16,10 +16,12 @@ namespace CiociariaGuerraBot.ConsoleApp
         public double BaricentroTerritorioY { get; set; }
         public int? IdProprietario { get; set; }
 
-        public Comune(int id, string nome, double x, double y)
+        public Comune(int id, string nome, double x, double y, int idProprietario)
         {
             Id = id;
             Nome = nome;
+            IdProprietario = idProprietario;
+
             BaricentroOrigX = x;
             BaricentroOrigY = y;
 
