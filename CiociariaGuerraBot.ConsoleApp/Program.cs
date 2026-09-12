@@ -22,7 +22,7 @@ catch (Exception ex)
     return;
 }
 
-List<Comune> comuni = renderer._comuni;
+IReadOnlyList<Comune> comuni = renderer.Comuni;
 if (comuni.Count == 0)
 {
     Console.Error.WriteLine("ERRORE: nessun comune caricato dal file mappa.");
@@ -33,7 +33,7 @@ Console.WriteLine($"Lista comuni caricata ({comuni.Count} comuni).");
 
 int indexer = 0;
 
-List<int> comuniInGara = GetComuniInGara(comuni);
+IReadOnlyList<int> comuniInGara = GetComuniInGara(comuni);
 
 while (comuniInGara.Count > 1)
 {
@@ -88,10 +88,10 @@ else
 Console.WriteLine("Premi un tasto per uscire...");
 Console.ReadKey();
 
-static List<int> GetComuniInGara(List<Comune> comuni) =>
+static IReadOnlyList<int> GetComuniInGara(IReadOnlyList<Comune> comuni) =>
     comuni.Select(c => c.IdProprietario ?? c.Id).Distinct().ToList();
 
-static void HandlerConquista(MapRenderer renderer, int indexer, List<Comune> comuni, int comuneAttaccanteId, int comuneConquistatoId)
+static void HandlerConquista(MapRenderer renderer, int indexer, IReadOnlyList<Comune> comuni, int comuneAttaccanteId, int comuneConquistatoId)
 {
     Comune? comuneAttaccante = comuni.FirstOrDefault(c => c.Id == comuneAttaccanteId);
     Comune? comuneConquistato = comuni.FirstOrDefault(c => c.Id == comuneConquistatoId);
@@ -118,7 +118,7 @@ static void HandlerConquista(MapRenderer renderer, int indexer, List<Comune> com
     renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id, oldProprietario.Id);
 }
 
-static void GeneraTesto(List<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato, Comune oldProprietario)
+static void GeneraTesto(IReadOnlyList<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato, Comune oldProprietario)
 {
     Console.Write($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {comuneAttaccante.Nome} ha conquistato il territorio di {comuneConquistato.Nome}");
 
@@ -135,7 +135,7 @@ static void GeneraTesto(List<Comune> comuni, Comune comuneAttaccante, Comune com
     }
 }
 
-static void GeneraReport(List<Comune> comuni)
+static void GeneraReport(IReadOnlyList<Comune> comuni)
 {
     foreach (Comune c in comuni)
     {
@@ -157,7 +157,7 @@ static void GeneraReport(List<Comune> comuni)
     }
 }
 
-static void RicalcolaBaricentro(Comune proprietario, List<Comune> comuni)
+static void RicalcolaBaricentro(Comune proprietario, IReadOnlyList<Comune> comuni)
 {
     List<Comune> territori = comuni.Where(c => c.Id == proprietario.Id || c.IdProprietario == proprietario.Id).ToList();
 

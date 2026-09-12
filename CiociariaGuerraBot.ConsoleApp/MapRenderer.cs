@@ -1,26 +1,35 @@
-﻿using System.Collections.ObjectModel;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Globalization;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace CiociariaGuerraBot.ConsoleApp
 {
-    class MapRenderer
+    sealed class MapRenderer
     {
         private readonly string _fileSvg;
-        private readonly string _cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"] ?? String.Empty;
+        private readonly string _cartellaOutput;
 
-        private readonly XNamespace ns = "http://www.w3.org/2000/svg";
+        private static readonly XNamespace Ns = "http://www.w3.org/2000/svg";
+
+        private static readonly Regex CssColorRegex = new(
+            @"\.(s\d+)\s*\{\s*fill:\s*(#[0-9a-fA-F]{6})",
+            RegexOptions.Compiled);
+
         private readonly XDocument _svg;
-        private readonly XElement? _territori;
-        private readonly XElement? _nomiComuni;
+        private readonly XElement _territori;
+        private readonly XElement _nomiComuni;
 
         private readonly Dictionary<int, XElement> _paths = new();
         private readonly Dictionary<int, XElement> _texts = new();
         private readonly Dictionary<string, string> _coloriCss = new();
-        public readonly List<Comune> _comuni = new();
+
+        private readonly List<Comune> _comuni = new();
+
+        /// <summary>Elenco dei comuni caricati dalla mappa. Gli elementi restano mutabili
+        /// (es. IdProprietario), ma la lista stessa non può essere sostituita o alterata
+        /// dall'esterno.</summary>
+        public IReadOnlyList<Comune> Comuni => _comuni;
 
         // Coefficienti della trasformazione affine CAD -> SVG
         private const double ScaleX = 2.834809;
@@ -30,28 +39,33 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         public MapRenderer(string fileSvg)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(fileSvg);
+
+            if (!File.Exists(fileSvg))
+                throw new FileNotFoundException($"File mappa SVG non trovato: '{fileSvg}'.", fileSvg);
+
             _fileSvg = fileSvg;
+
+            string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"];
+            if (string.IsNullOrWhiteSpace(cartellaOutput))
+                throw new InvalidOperationException("La chiave 'OutputFolder' non è configurata in App.config.");
+
+            _cartellaOutput = cartellaOutput;
 
             // Carica SVG
             _svg = XDocument.Load(_fileSvg);
 
             // Trova il gruppo Territori
             _territori = _svg
-                .Descendants(ns + "g")
-                .FirstOrDefault(g =>
-                    (string?)g.Attribute("id") == "Territori");
-
-            if (_territori == null)
-                throw new Exception("Gruppo 'Territori' non trovato nell'SVG.");
+                .Descendants(Ns + "g")
+                .FirstOrDefault(g => (string?)g.Attribute("id") == "Territori")
+                ?? throw new InvalidOperationException("Gruppo 'Territori' non trovato nell'SVG.");
 
             // Trova il gruppo NomiComuni
             _nomiComuni = _svg
-                .Descendants(ns + "g")
-                .FirstOrDefault(g =>
-                    (string?)g.Attribute("id") == "NomiComuni");
-
-            if (_nomiComuni == null)
-                throw new Exception("Gruppo 'NomiComuni' non trovato nell'SVG.");
+                .Descendants(Ns + "g")
+                .FirstOrDefault(g => (string?)g.Attribute("id") == "NomiComuni")
+                ?? throw new InvalidOperationException("Gruppo 'NomiComuni' non trovato nell'SVG.");
 
             // Indicizza tutti i path per id
             CaricaPathsComuni();
@@ -68,8 +82,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             Directory.CreateDirectory(_cartellaOutput);
         }
 
-
-        public void Renderizza(List<Comune> comuni, int turno, int? idAttaccante = null, int? idConquistato = null, int? idOldProprietario = null)
+        public void Renderizza(IReadOnlyList<Comune> comuni, int turno, int? idAttaccante = null, int? idConquistato = null, int? idOldProprietario = null)
         {
             foreach (XElement text in _texts.Values)
             {
@@ -85,20 +98,13 @@ namespace CiociariaGuerraBot.ConsoleApp
                 }
 
                 // SETTA COLORE DEI TERRITORI
-                string colore;
-                if (comune.IdProprietario == null)
-                {
-                    colore = GetColore(comune.Id);
-                }
-                else
-                {
-                    colore = GetColore(comune.IdProprietario.Value);
-                }
+                string colore = comune.IdProprietario is int idProprietarioColore
+                    ? GetColore(idProprietarioColore)
+                    : GetColore(comune.Id);
 
-                if (comune.Id == idConquistato)
+                if (comune.Id == idConquistato && idOldProprietario != null)
                 {
-                    if (idOldProprietario != null)
-                        colore = GetColore((int)idOldProprietario);
+                    colore = GetColore(idOldProprietario.Value);
                 }
 
                 // EVIDENZIA COMUNI COINVOLTI
@@ -120,7 +126,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                     strokeWidth = "4";
 
                     if (comune.Id == idConquistato)
-                        MostraNome(comune);
+                    MostraNome(comune);
                 }
                 else if (idOldProprietario != null && (comune.Id == idOldProprietario || comune.IdProprietario == idOldProprietario))
                 {
@@ -145,19 +151,14 @@ namespace CiociariaGuerraBot.ConsoleApp
             // 4. ecc..
             OrdinaTerritori(comuni, idOldProprietario, idAttaccante, idConquistato);
 
-
             // OUTPUT IMG
-
             string nomeFile = $"Mappa_Turno_{turno:D3}.svg";
-
             string percorsoOutput = Path.Combine(_cartellaOutput, nomeFile);
 
             _svg.Save(percorsoOutput);
 
             Console.WriteLine($"Mappa salvata: {percorsoOutput}");
         }
-
-
 
         private void MostraNome(Comune comune)
         {
@@ -168,7 +169,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             }
         }
 
-        private void OrdinaTerritori(List<Comune> comuni, int? idOldProprietario, int? idAttaccante, int? idConquistato)
+        private void OrdinaTerritori(IReadOnlyList<Comune> comuni, int? idOldProprietario, int? idAttaccante, int? idConquistato)
         {
             List<int> ordine = [];
 
@@ -184,7 +185,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             );
 
             if (idConquistato != null)
-                ordine.Add((int)idConquistato);
+                ordine.Add(idConquistato.Value);
 
             foreach (int id in ordine)
             {
@@ -203,7 +204,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         private void CaricaPathsComuni()
         {
-            foreach (XElement path in _territori!.Descendants(ns + "path"))
+            foreach (XElement path in _territori.Descendants(Ns + "path"))
             {
                 string? idAttr = path.Attribute("id")?.Value;
 
@@ -218,7 +219,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         private void CaricaNomiComuni()
         {
-            foreach (XElement text in _nomiComuni!.Descendants(ns + "text"))
+            foreach (XElement text in _nomiComuni.Descendants(Ns + "text"))
             {
                 string? idAttr = text.Attribute("id")?.Value;
 
@@ -233,27 +234,16 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         private void CaricaColoriCss()
         {
-            var style = _svg
-                .Descendants()
-                .FirstOrDefault(e =>
-                    e.Name.LocalName == "style");
+            XElement? style = _svg.Descendants().FirstOrDefault(e => e.Name.LocalName == "style");
 
             if (style == null)
-            {
-                throw new Exception("Nessun elemento <style> trovato nell'SVG.");
-            }
+                throw new InvalidOperationException("Nessun elemento <style> trovato nell'SVG.");
 
             string css = style.Value;
 
-            var regex = new Regex(
-                @"\.(s\d+)\s*\{\s*fill:\s*(#[0-9a-fA-F]{6})",
-                RegexOptions.Compiled
-            );
-
-            foreach (Match match in regex.Matches(css))
+            foreach (Match match in CssColorRegex.Matches(css))
             {
                 string classe = match.Groups[1].Value;
-
                 string colore = match.Groups[2].Value;
 
                 _coloriCss[classe] = colore;
@@ -264,7 +254,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         private void CaricaComuni()
         {
-            foreach (XElement path in _territori!.Descendants(ns + "path"))
+            foreach (XElement path in _territori.Descendants(Ns + "path"))
             {
                 string? idAttr = path.Attribute("id")?.Value;
                 string? nomeAttr = path.Attribute("name")?.Value;
@@ -273,6 +263,11 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 if (idAttr == null || !int.TryParse(idAttr, out int id))
                     continue;
+
+                if (string.IsNullOrWhiteSpace(nomeAttr))
+                {
+                    Console.WriteLine($"ATTENZIONE: nome mancante per id {id}");
+                }
 
                 if (xCadAttr == null || yCadAttr == null ||
                     !double.TryParse(xCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double xCad) ||
