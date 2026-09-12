@@ -79,6 +79,9 @@ namespace CiociariaGuerraBot.ConsoleApp
             // Carica gli oggetti Comune nella lista
             CaricaComuni();
 
+            // Aggiorna le coordinate dei nomi nell'SVG in base ai Comune appena caricati
+            AssegnaCoordinateTesti();
+
             Directory.CreateDirectory(_cartellaOutput);
         }
 
@@ -114,7 +117,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 if (idAttaccante != null && (comune.Id == idAttaccante || comune.IdProprietario == idAttaccante))
                 {
                     stroke = "#00FF00"; // VERDE
-                    strokeWidth = "4";
+                    strokeWidth = "3";
 
                     if (comune.Id == idAttaccante)
                         MostraNome(comune);
@@ -123,7 +126,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 if (idConquistato != null && comune.Id == idConquistato)
                 {
                     stroke = "#FF0000"; // ROSSO
-                    strokeWidth = "4";
+                    strokeWidth = "3";
 
                     if (comune.Id == idConquistato)
                     MostraNome(comune);
@@ -131,7 +134,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 else if (idOldProprietario != null && (comune.Id == idOldProprietario || comune.IdProprietario == idOldProprietario))
                 {
                     stroke = "#0000FF"; // BLU
-                    strokeWidth = "4";
+                    strokeWidth = "3";
 
                     if (comune.Id == idOldProprietario)
                         MostraNome(comune);
@@ -164,6 +167,8 @@ namespace CiociariaGuerraBot.ConsoleApp
         {
             if (_texts.TryGetValue(comune.Id, out XElement? text))
             {
+                text.SetAttributeValue("x", comune.BaricentroTerritorioX.ToString(CultureInfo.InvariantCulture));
+                text.SetAttributeValue("y", comune.BaricentroTerritorioY.ToString(CultureInfo.InvariantCulture));
                 text.SetAttributeValue("class", "nome-comune");
                 text.SetAttributeValue("style", "display:inline");
             }
@@ -282,20 +287,26 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg);
                 _comuni.Add(comune);
-
-                // ASSEGNA AI TESTI LE COORDINATE X e Y NORMALIZZATE in SVG
-                if (_texts.TryGetValue(id, out XElement? text))
-                {
-                    text.SetAttributeValue("x", xSvg.ToString(CultureInfo.InvariantCulture));
-                    text.SetAttributeValue("y", ySvg.ToString(CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    Console.WriteLine($"ATTENZIONE: testo non trovato per id {id} ({nomeAttr})");
-                }
             }
 
             Console.WriteLine($"Caricati {_comuni.Count} Comuni.");
+        }
+
+        // Posiziona ogni <text> del gruppo NomiComuni sulle coordinate SVG del relativo Comune.
+        private void AssegnaCoordinateTesti()
+        {
+            foreach (Comune comune in _comuni)
+            {
+                if (_texts.TryGetValue(comune.Id, out XElement? text))
+                {
+                    text.SetAttributeValue("x", comune.BaricentroOrigX.ToString(CultureInfo.InvariantCulture));
+                    text.SetAttributeValue("y", comune.BaricentroOrigY.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    Console.WriteLine($"ATTENZIONE: testo non trovato per id {comune.Id} ({comune.Nome})");
+                }
+            }
         }
 
         private string GetColore(int id)
