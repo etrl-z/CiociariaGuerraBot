@@ -85,6 +85,20 @@ else
     Console.WriteLine("ERRORE: impossibile determinare il vincitore.");
 }
 
+
+// TEST GENERAZIONE GIF
+// ----------------------------------------------------------------------------------------------------
+
+//string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"];
+//if (string.IsNullOrWhiteSpace(cartellaOutput))
+//    throw new InvalidOperationException("La chiave 'OutputFolder' non è configurata in App.config.");
+
+//GifMaker.ConvertAllSvgToJpg(cartellaOutput);
+//GifMaker.CreateGif(cartellaOutput);
+
+// ----------------------------------------------------------------------------------------------------
+
+
 Console.WriteLine("Premi un tasto per uscire...");
 Console.ReadKey();
 
