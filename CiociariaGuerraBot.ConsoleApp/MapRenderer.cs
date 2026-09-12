@@ -37,6 +37,10 @@ namespace CiociariaGuerraBot.ConsoleApp
         private const double OffsetX = 510.7850;
         private const double OffsetY = 715.5535;
 
+        // Pattern a strisce oblique per il territorio appena conquistato
+        private const string PatternConquistatoId = "pattern-conquistato";
+        private const int PatternStripSize = 8;
+
         public MapRenderer(string fileSvg)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(fileSvg);
@@ -107,7 +111,10 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 if (comune.Id == idConquistato && idOldProprietario != null)
                 {
-                    colore = GetColore(idOldProprietario.Value);
+                    string coloreVecchio = GetColore(idOldProprietario.Value);
+                    string coloreNuovo = idAttaccante != null ? GetColore(idAttaccante.Value) : coloreVecchio;
+
+                    colore = $"url(#{AssicuraPatternConquista(coloreVecchio, coloreNuovo)})";
                 }
 
                 // EVIDENZIA COMUNI COINVOLTI
@@ -129,7 +136,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                     strokeWidth = "3";
 
                     if (comune.Id == idConquistato)
-                    MostraNome(comune);
+                        MostraNome(comune);
                 }
                 else if (idOldProprietario != null && (comune.Id == idOldProprietario || comune.IdProprietario == idOldProprietario))
                 {
@@ -307,6 +314,49 @@ namespace CiociariaGuerraBot.ConsoleApp
                     Console.WriteLine($"ATTENZIONE: testo non trovato per id {comune.Id} ({comune.Nome})");
                 }
             }
+        }
+
+        // Crea (la prima volta) o aggiorna (nei turni successivi) un <pattern> a strisce oblique
+        // che alterna il colore del vecchio proprietario e quello dell'attaccante, e lo registra
+        // nel <defs> dell'SVG. Restituisce l'id del pattern, da usare come fill="url(#id)".
+        private string AssicuraPatternConquista(string coloreVecchio, string coloreNuovo)
+        {
+            XElement? defs = _svg.Root!.Element(Ns + "defs");
+            if (defs == null)
+            {
+                defs = new XElement(Ns + "defs");
+                _svg.Root!.AddFirst(defs);
+            }
+
+            XElement? pattern = defs.Elements(Ns + "pattern")
+                .FirstOrDefault(p => (string?)p.Attribute("id") == PatternConquistatoId);
+
+            if (pattern == null)
+            {
+                pattern = new XElement(Ns + "pattern",
+                    new XAttribute("id", PatternConquistatoId),
+                    new XAttribute("patternUnits", "userSpaceOnUse"),
+                    new XAttribute("patternTransform", "rotate(45)"),
+                    new XAttribute("width", PatternStripSize),
+                    new XAttribute("height", PatternStripSize));
+
+                defs.Add(pattern);
+            }
+
+            // Ricostruisce il contenuto ogni volta: i colori cambiano ad ogni conquista
+            // (vecchio proprietario e attaccante sono diversi turno per turno).
+            pattern.RemoveNodes();
+            pattern.Add(
+                new XElement(Ns + "rect",
+                    new XAttribute("width", PatternStripSize),
+                    new XAttribute("height", PatternStripSize),
+                    new XAttribute("fill", coloreVecchio)),
+                new XElement(Ns + "rect",
+                    new XAttribute("width", PatternStripSize / 2),
+                    new XAttribute("height", PatternStripSize),
+                    new XAttribute("fill", coloreNuovo)));
+
+            return PatternConquistatoId;
         }
 
         private string GetColore(int id)

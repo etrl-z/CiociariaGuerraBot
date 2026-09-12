@@ -123,13 +123,16 @@ static void HandlerConquista(MapRenderer renderer, int indexer, IReadOnlyList<Co
 
     GeneraTesto(comuni, comuneAttaccante, comuneConquistato, oldProprietario);
 
+
+    renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id, oldProprietario.Id);
+
+
     // RICALCOLO I BARICENTRI DI ATTACCANTE E VECCHIO PROPRIETARIO
     RicalcolaBaricentro(comuneAttaccante, comuni);
     RicalcolaBaricentro(oldProprietario, comuni);
 
     GeneraReport(comuni);
 
-    renderer.Renderizza(comuni, indexer, comuneAttaccante.Id, comuneConquistato.Id, oldProprietario.Id);
 }
 
 static void GeneraTesto(IReadOnlyList<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato, Comune oldProprietario)
