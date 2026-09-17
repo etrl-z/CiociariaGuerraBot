@@ -72,9 +72,50 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             gif[0].AnimationIterations = 1;
 
-            gif.Write(fileGif);
+            EseguiConProgress(() => gif.Write(fileGif));
 
             Console.WriteLine($"GIF creata: {fileGif}");
+        }
+
+        static void EseguiConProgress(Action operazione)
+        {
+            bool completato = false;
+
+            Task task = Task.Run(() =>
+            {
+                operazione();
+                completato = true;
+            });
+
+            string[] animazione =
+            {
+                "[::        ]",
+                "[ :::      ]",
+                "[  :::     ]",
+                "[   :::    ]",
+                "[    :::   ]",
+                "[     :::  ]",
+                "[      ::: ]",
+                "[       :::]",
+                "[      ::: ]",
+                "[     :::  ]",
+                "[    :::   ]",
+                "[   :::    ]",
+                "[  :::     ]",
+                "[ :::      ]"
+            };
+
+            int i = 0;
+
+            while (!completato)
+            {
+                Console.Write($"\r{animazione[i++ % animazione.Length]} Elaborazione...");
+                Thread.Sleep(100);
+            }
+
+            task.Wait();
+
+            Console.WriteLine("\r[::::::::::] Completato!     ");
         }
     }
 }

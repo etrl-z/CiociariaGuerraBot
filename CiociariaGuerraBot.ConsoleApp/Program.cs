@@ -89,12 +89,9 @@ else
 // TEST GENERAZIONE GIF
 // ----------------------------------------------------------------------------------------------------
 
-//string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"];
-//if (string.IsNullOrWhiteSpace(cartellaOutput))
-//    throw new InvalidOperationException("La chiave 'OutputFolder' non è configurata in App.config.");
-
-//GifMaker.ConvertAllSvgToJpg(cartellaOutput);
-//GifMaker.CreateGif(cartellaOutput);
+string cartellaOutput = renderer._cartellaOutput;
+GifMaker.ConvertAllSvgToJpg(cartellaOutput);
+GifMaker.CreateGif(cartellaOutput);
 
 // ----------------------------------------------------------------------------------------------------
 

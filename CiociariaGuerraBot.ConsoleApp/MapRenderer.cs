@@ -8,7 +8,7 @@ namespace CiociariaGuerraBot.ConsoleApp
     sealed class MapRenderer
     {
         private readonly string _fileSvg;
-        private readonly string _cartellaOutput;
+        public string _cartellaOutput;
 
         private static readonly XNamespace Ns = "http://www.w3.org/2000/svg";
 
@@ -50,9 +50,9 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             _fileSvg = fileSvg;
 
-            string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"];
+            string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"] + $"\\{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
             if (string.IsNullOrWhiteSpace(cartellaOutput))
-                throw new InvalidOperationException("La chiave 'OutputFolder' non è configurata in App.config.");
+                throw new InvalidOperationException("Chiave 'OutputFolder' non configurata.");
 
             _cartellaOutput = cartellaOutput;
 
