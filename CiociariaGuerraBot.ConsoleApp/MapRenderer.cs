@@ -8,22 +8,15 @@ namespace CiociariaGuerraBot.ConsoleApp
     sealed class MapRenderer
     {
         private readonly string _fileSvg;
-        public string _cartellaOutput;
+        private readonly string _outputFolder;
 
         private static readonly XNamespace Ns = "http://www.w3.org/2000/svg";
-
-        private static readonly Regex CssColorRegex = new(
-            @"\.(s\d+)\s*\{\s*fill:\s*(#[0-9a-fA-F]{6})",
-            RegexOptions.Compiled);
 
         private readonly XDocument _svg;
         private readonly XElement _territori;
         private readonly XElement _nomiComuni;
 
         private readonly Dictionary<int, XElement> _paths = new();
-        private readonly Dictionary<int, XElement> _texts = new();
-        private readonly Dictionary<string, string> _coloriCss = new();
-
         private readonly List<Comune> _comuni = new();
 
         /// <summary>Elenco dei comuni caricati dalla mappa. Gli elementi restano mutabili
@@ -41,7 +34,7 @@ namespace CiociariaGuerraBot.ConsoleApp
         private const string PatternConquistatoId = "pattern-conquistato";
         private const int PatternStripSize = 8;
 
-        public MapRenderer(string fileSvg)
+        public MapRenderer(string fileSvg, string cartellaOutput)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(fileSvg);
 
@@ -50,11 +43,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             _fileSvg = fileSvg;
 
-            string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"] + $"\\{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
-            if (string.IsNullOrWhiteSpace(cartellaOutput))
-                throw new InvalidOperationException("Chiave 'OutputFolder' non configurata.");
-
-            _cartellaOutput = cartellaOutput;
+            _outputFolder = cartellaOutput;
 
             // Carica SVG
             _svg = XDocument.Load(_fileSvg);
@@ -74,47 +63,33 @@ namespace CiociariaGuerraBot.ConsoleApp
             // Indicizza tutti i path per id
             CaricaPathsComuni();
 
-            // Indicizza tutti i text per id
-            CaricaNomiComuni();
-
-            // Indicizza tutti i colori del CSS per id
-            CaricaColoriCss();
-
             // Carica gli oggetti Comune nella lista
             CaricaComuni();
-
-            // Aggiorna le coordinate dei nomi nell'SVG in base ai Comune appena caricati
-            AssegnaCoordinateTesti();
-
-            Directory.CreateDirectory(_cartellaOutput);
         }
 
-        public void Renderizza(IReadOnlyList<Comune> comuni, int turno, int? idAttaccante = null, int? idConquistato = null, int? idOldProprietario = null)
+        public void Renderizza(IReadOnlyList<Comune> comuni, int turno = 0, int? idAttaccante = null, int? idConquistato = null, int? idOldProprietario = null)
         {
-            foreach (XElement text in _texts.Values)
-            {
-                text.SetAttributeValue("style", "display:none");
-            }
+            _nomiComuni.RemoveNodes();
 
             foreach (Comune comune in comuni)
             {
                 if (!_paths.TryGetValue(comune.Id, out XElement? path))
                 {
-                    Console.WriteLine($"ATTENZIONE: territorio non trovato nell'SVG: {comune.Nome}");
+                    Logger.Log($"ATTENZIONE: territorio non trovato nell'SVG: {comune.Nome}");
                     continue;
                 }
 
                 // SETTA COLORE DEI TERRITORI
-                string colore = comune.IdProprietario is int idProprietarioColore
-                    ? GetColore(idProprietarioColore)
-                    : GetColore(comune.Id);
+                string? colore = comune.IdProprietario is int idProprietarioColore
+                    ? GetFillColorFromPath(idProprietarioColore)
+                    : GetFillColorFromPath(comune.Id);
 
                 if (comune.Id == idConquistato && idOldProprietario != null)
                 {
-                    string coloreVecchio = GetColore(idOldProprietario.Value);
-                    string coloreNuovo = idAttaccante != null ? GetColore(idAttaccante.Value) : coloreVecchio;
+                    string? coloreVecchio = GetFillColorFromPath(idOldProprietario.Value);
+                    string? coloreNuovo = idAttaccante != null ? GetFillColorFromPath(idAttaccante.Value) : coloreVecchio;
 
-                    colore = $"url(#{AssicuraPatternConquista(coloreVecchio, coloreNuovo)})";
+                    colore = $"url(#{AssicuraPatternConquista(comune.Id, coloreVecchio, coloreNuovo)})";
                 }
 
                 // EVIDENZIA COMUNI COINVOLTI
@@ -162,21 +137,50 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             // OUTPUT IMG
             string nomeFile = $"Mappa_Turno_{turno:D3}.svg";
-            string percorsoOutput = Path.Combine(_cartellaOutput, nomeFile);
+            string percorsoOutput = Path.Combine(_outputFolder, nomeFile);
 
             _svg.Save(percorsoOutput);
 
-            Console.WriteLine($"Mappa salvata: {percorsoOutput}");
+            Logger.Log($"Mappa salvata: {percorsoOutput}");
+
+            string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(percorsoOutput) + ".jpg");
+            GifMaker.ConvertSvgToJpg(percorsoOutput, fileJpg);
+
+            Logger.Log($"Convertito: {Path.GetFileName(percorsoOutput)}");
+        }
+
+        private string? GetFillColorFromPath(int id)
+        {
+            if (!_paths.TryGetValue(id, out XElement? path))
+            {
+                Logger.Log($"Path non trovato per ID {id}");
+                return "#FFFFFF";
+            }
+
+            string? style = path.Attribute("style")?.Value;
+            return style?
+                .Split(';')
+                .FirstOrDefault(x => x.TrimStart().StartsWith("fill:"))?
+                .Split(':', 2)[1]
+                .Trim();
         }
 
         private void MostraNome(Comune comune)
         {
-            if (_texts.TryGetValue(comune.Id, out XElement? text))
+            if (_paths.TryGetValue(comune.Id, out XElement? path))
             {
+                var name = path.Attribute("name")?.Value;
+                if (string.IsNullOrEmpty(name))
+                    return;
+
+                XElement text = new XElement(Ns + "text");
                 text.SetAttributeValue("x", comune.BaricentroTerritorioX.ToString(CultureInfo.InvariantCulture));
                 text.SetAttributeValue("y", comune.BaricentroTerritorioY.ToString(CultureInfo.InvariantCulture));
                 text.SetAttributeValue("class", "nome-comune");
                 text.SetAttributeValue("style", "display:inline");
+                text.Value = name;
+
+                _nomiComuni.Add(text);
             }
         }
 
@@ -213,6 +217,51 @@ namespace CiociariaGuerraBot.ConsoleApp
             }
         }
 
+        // Crea (la prima volta) o aggiorna (nei turni successivi) un <pattern> a strisce oblique
+        // che alterna il colore del vecchio proprietario e quello dell'attaccante, e lo registra
+        // nel <defs> dell'SVG. Restituisce l'id del pattern, da usare come fill="url(#id)".
+        private string AssicuraPatternConquista(int idComune, string? coloreVecchio, string? coloreNuovo)
+        {
+            XElement? defs = _svg.Root!.Element(Ns + "defs");
+            if (defs == null)
+            {
+                defs = new XElement(Ns + "defs");
+                _svg.Root!.AddFirst(defs);
+            }
+
+            string patternId = $"{PatternConquistatoId}_{idComune}";
+
+            XElement? pattern = defs.Elements(Ns + "pattern")
+                .FirstOrDefault(p => (string?)p.Attribute("id") == patternId);
+
+            if (pattern == null)
+            {
+                pattern = new XElement(Ns + "pattern",
+                    new XAttribute("id", patternId),
+                    new XAttribute("patternUnits", "userSpaceOnUse"),
+                    new XAttribute("patternTransform", "rotate(45)"),
+                    new XAttribute("width", PatternStripSize),
+                    new XAttribute("height", PatternStripSize));
+
+                defs.Add(pattern);
+            }
+
+            // Ricostruisce il contenuto ogni volta: i colori cambiano ad ogni conquista
+            // (vecchio proprietario e attaccante sono diversi turno per turno).
+            pattern.RemoveNodes();
+            pattern.Add(
+                new XElement(Ns + "rect",
+                    new XAttribute("width", PatternStripSize),
+                    new XAttribute("height", PatternStripSize),
+                    new XAttribute("fill", coloreVecchio ?? "#FFFFFF")),
+                new XElement(Ns + "rect",
+                    new XAttribute("width", PatternStripSize / 2),
+                    new XAttribute("height", PatternStripSize),
+                    new XAttribute("fill", coloreNuovo ?? "#FFFFFF")));
+
+            return patternId;
+        }
+
         private void CaricaPathsComuni()
         {
             foreach (XElement path in _territori.Descendants(Ns + "path"))
@@ -225,42 +274,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 }
             }
 
-            Console.WriteLine($"Indicizzati {_paths.Count} Territori.");
-        }
-
-        private void CaricaNomiComuni()
-        {
-            foreach (XElement text in _nomiComuni.Descendants(Ns + "text"))
-            {
-                string? idAttr = text.Attribute("id")?.Value;
-
-                if (idAttr != null && int.TryParse(idAttr, out int id))
-                {
-                    _texts[id] = text;
-                }
-            }
-
-            Console.WriteLine($"Indicizzati {_texts.Count} NomiComuni.");
-        }
-
-        private void CaricaColoriCss()
-        {
-            XElement? style = _svg.Descendants().FirstOrDefault(e => e.Name.LocalName == "style");
-
-            if (style == null)
-                throw new InvalidOperationException("Nessun elemento <style> trovato nell'SVG.");
-
-            string css = style.Value;
-
-            foreach (Match match in CssColorRegex.Matches(css))
-            {
-                string classe = match.Groups[1].Value;
-                string colore = match.Groups[2].Value;
-
-                _coloriCss[classe] = colore;
-            }
-
-            Console.WriteLine($"Caricate {_coloriCss.Count} classi CSS.");
+            Logger.Log($"Indicizzati {_paths.Count} Territori.");
         }
 
         private void CaricaComuni()
@@ -277,14 +291,14 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 if (string.IsNullOrWhiteSpace(nomeAttr))
                 {
-                    Console.WriteLine($"ATTENZIONE: nome mancante per id {id}");
+                    Logger.Log($"ATTENZIONE: nome mancante per id {id}");
                 }
 
                 if (xCadAttr == null || yCadAttr == null ||
                     !double.TryParse(xCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double xCad) ||
                     !double.TryParse(yCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double yCad))
                 {
-                    Console.WriteLine($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({nomeAttr})");
+                    Logger.Log($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({nomeAttr})");
                     continue;
                 }
 
@@ -295,93 +309,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 _comuni.Add(comune);
             }
 
-            Console.WriteLine($"Caricati {_comuni.Count} Comuni.");
-        }
-
-        // Posiziona ogni <text> del gruppo NomiComuni sulle coordinate SVG del relativo Comune.
-        private void AssegnaCoordinateTesti()
-        {
-            foreach (Comune comune in _comuni)
-            {
-                if (_texts.TryGetValue(comune.Id, out XElement? text))
-                {
-                    text.SetAttributeValue("x", comune.BaricentroOrigX.ToString(CultureInfo.InvariantCulture));
-                    text.SetAttributeValue("y", comune.BaricentroOrigY.ToString(CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    Console.WriteLine($"ATTENZIONE: testo non trovato per id {comune.Id} ({comune.Nome})");
-                }
-            }
-        }
-
-        // Crea (la prima volta) o aggiorna (nei turni successivi) un <pattern> a strisce oblique
-        // che alterna il colore del vecchio proprietario e quello dell'attaccante, e lo registra
-        // nel <defs> dell'SVG. Restituisce l'id del pattern, da usare come fill="url(#id)".
-        private string AssicuraPatternConquista(string coloreVecchio, string coloreNuovo)
-        {
-            XElement? defs = _svg.Root!.Element(Ns + "defs");
-            if (defs == null)
-            {
-                defs = new XElement(Ns + "defs");
-                _svg.Root!.AddFirst(defs);
-            }
-
-            XElement? pattern = defs.Elements(Ns + "pattern")
-                .FirstOrDefault(p => (string?)p.Attribute("id") == PatternConquistatoId);
-
-            if (pattern == null)
-            {
-                pattern = new XElement(Ns + "pattern",
-                    new XAttribute("id", PatternConquistatoId),
-                    new XAttribute("patternUnits", "userSpaceOnUse"),
-                    new XAttribute("patternTransform", "rotate(45)"),
-                    new XAttribute("width", PatternStripSize),
-                    new XAttribute("height", PatternStripSize));
-
-                defs.Add(pattern);
-            }
-
-            // Ricostruisce il contenuto ogni volta: i colori cambiano ad ogni conquista
-            // (vecchio proprietario e attaccante sono diversi turno per turno).
-            pattern.RemoveNodes();
-            pattern.Add(
-                new XElement(Ns + "rect",
-                    new XAttribute("width", PatternStripSize),
-                    new XAttribute("height", PatternStripSize),
-                    new XAttribute("fill", coloreVecchio)),
-                new XElement(Ns + "rect",
-                    new XAttribute("width", PatternStripSize / 2),
-                    new XAttribute("height", PatternStripSize),
-                    new XAttribute("fill", coloreNuovo)));
-
-            return PatternConquistatoId;
-        }
-
-        private string GetColore(int id)
-        {
-            if (!_paths.TryGetValue(id, out XElement? path))
-            {
-                Console.WriteLine($"Path non trovato per ID {id}");
-                return "#FFFFFF";
-            }
-
-            string? classe = path.Attribute("class")?.Value;
-
-            if (string.IsNullOrEmpty(classe))
-            {
-                Console.WriteLine($"Classe CSS non trovata per ID {id}");
-                return "#FFFFFF";
-            }
-
-            if (_coloriCss.TryGetValue(classe, out string? colore))
-            {
-                return colore;
-            }
-
-            Console.WriteLine($"Colore non trovato per classe {classe}");
-
-            return "#FFFFFF";
+            Logger.Log($"Caricati {_comuni.Count} Comuni.");
         }
     }
 }

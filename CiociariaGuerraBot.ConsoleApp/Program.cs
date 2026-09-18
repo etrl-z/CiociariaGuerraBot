@@ -1,35 +1,46 @@
 ﻿using CiociariaGuerraBot.ConsoleApp;
 using System.Configuration;
 
-Console.WriteLine("START");
+// --- CARICAMENTO CONFIGURAZIONI ---
+string? cartellaOutput = ConfigurationManager.AppSettings["OutputFolder"] + $"\\{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
+if (string.IsNullOrWhiteSpace(cartellaOutput))
+{
+    throw new FileNotFoundException("ERRORE: chiave 'OutputFolder' non configurata.");
+}
 
-// --- CARICAMENTO CONFIGURAZIONE ---
+Directory.CreateDirectory(cartellaOutput);
+
+Logger._logPath = Path.Combine(cartellaOutput, $"Run_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt");
+
 string? fileMappa = ConfigurationManager.AppSettings["FileMappa"];
 if (string.IsNullOrWhiteSpace(fileMappa))
 {
-    Console.Error.WriteLine("ERRORE: chiave 'FileMappa' non configurata.");
+    Logger.Log("ERRORE: chiave 'FileMappa' non configurata.");
     return;
 }
 
+Logger.Log("START");
+
 MapRenderer renderer;
+
 try
 {
-    renderer = new MapRenderer(fileMappa);
+    renderer = new MapRenderer(fileMappa, cartellaOutput);
 }
 catch (Exception ex)
 {
-    Console.Error.WriteLine($"ERRORE durante il caricamento della mappa '{fileMappa}': {ex.Message}");
+    Logger.Log($"ERRORE durante il caricamento della mappa '{fileMappa}': {ex.Message}");
     return;
 }
 
 IReadOnlyList<Comune> comuni = renderer.Comuni;
 if (comuni.Count == 0)
 {
-    Console.Error.WriteLine("ERRORE: nessun comune caricato dal file mappa.");
+    Logger.Log("ERRORE: nessun comune caricato dal file mappa.");
     return;
 }
 
-Console.WriteLine($"Lista comuni caricata ({comuni.Count} comuni).");
+Logger.Log($"Lista comuni caricata ({comuni.Count} comuni).");
 
 int indexer = 0;
 
@@ -37,19 +48,19 @@ IReadOnlyList<int> comuniInGara = GetComuniInGara(comuni);
 
 while (comuniInGara.Count > 1)
 {
-    Console.WriteLine("----------------------------------------------------------");
+    Logger.Log("---------------------------------------------------------------------------------------------------------------------------");
     indexer++;
-    Console.WriteLine($"TURNO {indexer}");
-    Console.WriteLine($"{comuniInGara.Count} Comuni in gara");
+    Logger.Log($"TURNO {indexer}");
+    Logger.Log($"{comuniInGara.Count} Comuni in gara");
 
     Comune comuneEstratto = comuni[Random.Shared.Next(comuni.Count)];
-    Console.WriteLine($"Id estratto: {comuneEstratto.Id} | {comuneEstratto.Nome}");
+    Logger.Log($"Id estratto: {comuneEstratto.Id} | {comuneEstratto.Nome}");
 
     Comune comuneAttaccante = comuneEstratto.IdProprietario is int idProprietario
         ? comuni.First(c => c.Id == idProprietario)
         : comuneEstratto;
 
-    Console.WriteLine($"Attaccante: {comuneAttaccante.Id} | {comuneAttaccante.Nome}");
+    Logger.Log($"Attaccante: {comuneAttaccante.Id} | {comuneAttaccante.Nome}");
 
     Comune? comuneConquistato = comuni
         .Where(c => c.Id != comuneAttaccante.Id)
@@ -59,17 +70,17 @@ while (comuniInGara.Count > 1)
 
     if (comuneConquistato == null)
     {
-        Console.WriteLine("Nessun bersaglio disponibile per l'attaccante estratto, salto il turno.");
+        Logger.Log("Nessun bersaglio disponibile per l'attaccante estratto, salto il turno.");
         continue;
     }
 
     HandlerConquista(renderer, indexer, comuni, comuneAttaccante.Id, comuneConquistato.Id);
 
     comuniInGara = GetComuniInGara(comuni);
-    Console.WriteLine($"{comuniInGara.Count} {(comuniInGara.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
+    Logger.Log($"{comuniInGara.Count} {(comuniInGara.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
 }
 
-Console.WriteLine("----------------------------------------------------------");
+Logger.Log("---------------------------------------------------------------------------------------------------------------------------");
 
 Comune? winner = comuni.FirstOrDefault(c => c.Id == comuniInGara.FirstOrDefault());
 
@@ -77,20 +88,18 @@ if (winner != null)
 {
     renderer.Renderizza(comuni, ++indexer, winner.Id);
 
-    Console.WriteLine($"{winner.Nome} ha interamente conquistato la Ciociaria.");
-    Console.WriteLine($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Nome}.");
+    Logger.Log($"{winner.Nome} ha interamente conquistato la Ciociaria.");
+    Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Nome}.");
 }
 else
 {
-    Console.WriteLine("ERRORE: impossibile determinare il vincitore.");
+    Logger.Log("ERRORE: impossibile determinare il vincitore.");
 }
 
 
-// TEST GENERAZIONE GIF
+// GENERAZIONE GIF
 // ----------------------------------------------------------------------------------------------------
 
-string cartellaOutput = renderer._cartellaOutput;
-GifMaker.ConvertAllSvgToJpg(cartellaOutput);
 GifMaker.CreateGif(cartellaOutput);
 
 // ----------------------------------------------------------------------------------------------------
@@ -134,10 +143,10 @@ static void HandlerConquista(MapRenderer renderer, int indexer, IReadOnlyList<Co
 
 static void GeneraTesto(IReadOnlyList<Comune> comuni, Comune comuneAttaccante, Comune comuneConquistato, Comune oldProprietario)
 {
-    Console.Write($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {comuneAttaccante.Nome} ha conquistato il territorio di {comuneConquistato.Nome}");
+    Logger.Log($"[{DateTime.Now:dd/MM/yyyy - HH:mm:ss}] {comuneAttaccante.Nome} ha conquistato il territorio di {comuneConquistato.Nome}", false);
 
     bool eraIndipendente = oldProprietario.Id == comuneConquistato.Id;
-    Console.WriteLine(eraIndipendente
+    Logger.Log(eraIndipendente
         ? "."
         : $", precedentemente appartenente al Comune di {oldProprietario.Nome}.");
 
@@ -145,7 +154,7 @@ static void GeneraTesto(IReadOnlyList<Comune> comuni, Comune comuneAttaccante, C
     bool haAncoraTerritori = comuni.Any(c => c.IdProprietario == oldProprietario.Id);
     if (!haAncoraTerritori)
     {
-        Console.WriteLine($"Il Comune di {oldProprietario.Nome} è stato completamente sconfitto.");
+        Logger.Log($"Il Comune di {oldProprietario.Nome} è stato completamente sconfitto.");
     }
 }
 
@@ -153,20 +162,16 @@ static void GeneraReport(IReadOnlyList<Comune> comuni)
 {
     foreach (Comune c in comuni)
     {
-        bool isExpanded = c.BaricentroOrigX != c.BaricentroTerritorioX
-            || c.BaricentroOrigY != c.BaricentroTerritorioY;
-
         Comune? proprietario = comuni.FirstOrDefault(x => x.Id == c.IdProprietario);
 
-        Console.WriteLine(
+        Logger.Log(
             $"{c.Id,-2} | " +
             $"{c.Nome,-28} | " +
             $"P: {proprietario?.Nome,-28} | " +
             $"X {c.BaricentroOrigX,8:F2} | " +
             $"Y {c.BaricentroOrigY,8:F2} | " +
             $"X_t {c.BaricentroTerritorioX,8:F2} | " +
-            $"Y_t {c.BaricentroTerritorioY,8:F2} | " +
-            $"{(isExpanded ? "Y" : "False")}"
+            $"Y_t {c.BaricentroTerritorioY,8:F2}"
         );
     }
 }

@@ -15,7 +15,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 ConvertSvgToJpg(fileSvg, fileJpg);
 
-                Console.WriteLine($"Convertito: {Path.GetFileName(fileSvg)}");
+                Logger.Log($"Convertito: {Path.GetFileName(fileSvg)}");
             }
         }
 
@@ -54,7 +54,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             if (files.Count == 0)
             {
-                Console.WriteLine("Nessuna immagine trovata.");
+                Logger.Log("Nessuna immagine trovata.");
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             EseguiConProgress(() => gif.Write(fileGif));
 
-            Console.WriteLine($"GIF creata: {fileGif}");
+            Logger.Log($"GIF creata: {fileGif}");
         }
 
         static void EseguiConProgress(Action operazione)
