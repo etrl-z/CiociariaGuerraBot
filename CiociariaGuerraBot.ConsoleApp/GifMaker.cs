@@ -4,12 +4,12 @@ namespace CiociariaGuerraBot.ConsoleApp
 {
     internal class GifMaker
     {
-        public static void ConvertAllSvgToJpg(string cartella)
+        public static void ConvertAllSvgToJpg(string folder)
         {
-            foreach (string fileSvg in Directory.GetFiles(cartella, "*.svg"))
+            foreach (string fileSvg in Directory.GetFiles(folder, "*.svg"))
             {
                 string fileJpg = Path.Combine(
-                    cartella,
+                    folder,
                     Path.GetFileNameWithoutExtension(fileSvg) + ".jpg"
                 );
 
@@ -36,19 +36,19 @@ namespace CiociariaGuerraBot.ConsoleApp
             image.Write(fileJpg);
         }
 
-        public static void CreateGif(string cartella)
+        public static void CreateGif(string folder)
         {
             string fileName = $"Run_{DateTime.Now:yyyy-MM-dd_hh-mm-ss}.gif";
-            string fileGif = Path.Combine(cartella, fileName);
+            string fileGif = Path.Combine(folder, fileName);
 
             var files = Directory
-                .GetFiles(cartella, "*.jpg")
+                .GetFiles(folder, "*.jpg")
                 .Where(f => !Path.GetFileName(f).Equals(fileName, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(f =>
                 {
-                    string nome = Path.GetFileNameWithoutExtension(f);
-                    string numero = new string(nome.Where(char.IsDigit).ToArray());
-                    return int.TryParse(numero, out int n) ? n : int.MaxValue;
+                    string name = Path.GetFileNameWithoutExtension(f);
+                    string number = new string(name.Where(char.IsDigit).ToArray());
+                    return int.TryParse(number, out int n) ? n : int.MaxValue;
                 })
                 .ToList();
 
@@ -64,7 +64,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             {
                 var frame = new MagickImage(file);
 
-                frame.AnimationDelay = 30; // 0,3 secondi
+                frame.AnimationDelay = 30; // 0,3 seconds
                 frame.AnimationTicksPerSecond = 100;
 
                 gif.Add(frame);
@@ -72,22 +72,22 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             gif[0].AnimationIterations = 1;
 
-            EseguiConProgress(() => gif.Write(fileGif));
+            ExecuteWithProgressBar(() => gif.Write(fileGif));
 
             Logger.Log($"GIF creata: {fileGif}");
         }
 
-        static void EseguiConProgress(Action operazione)
+        static void ExecuteWithProgressBar(Action operation)
         {
-            bool completato = false;
+            bool completed = false;
 
             Task task = Task.Run(() =>
             {
-                operazione();
-                completato = true;
+                operation();
+                completed = true;
             });
 
-            string[] animazione =
+            string[] animation =
             {
                 "[::        ]",
                 "[ :::      ]",
@@ -107,9 +107,9 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             int i = 0;
 
-            while (!completato)
+            while (!completed)
             {
-                Console.Write($"\r{animazione[i++ % animazione.Length]} Elaborazione...");
+                Console.Write($"\r{animation[i++ % animation.Length]} Elaborazione...");
                 Thread.Sleep(100);
             }
 

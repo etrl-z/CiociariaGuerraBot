@@ -10,19 +10,19 @@ namespace CiociariaGuerraBot.ConsoleApp
     {
         public static string _logPath = ".";
 
-        public static void Log(string messaggio, bool newLine = true)
+        public static void Log(string message, bool newLine = true)
         {
             if (newLine)
             {
-                Console.WriteLine(messaggio);
+                Console.WriteLine(message);
 
-                File.AppendAllText(_logPath, messaggio + Environment.NewLine);
+                File.AppendAllText(_logPath, message + Environment.NewLine);
             }
             else
             {
-                Console.Write(messaggio);
+                Console.Write(message);
 
-                File.AppendAllText(_logPath, messaggio);
+                File.AppendAllText(_logPath, message);
             }
         }
     }

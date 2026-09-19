@@ -13,28 +13,29 @@ namespace CiociariaGuerraBot.ConsoleApp
         private static readonly XNamespace Ns = "http://www.w3.org/2000/svg";
 
         private readonly XDocument _svg;
-        private readonly XElement _territori;
-        private readonly XElement _nomiComuni;
+        private readonly XElement _territories;
+        private readonly XElement _names;
 
         private readonly Dictionary<int, XElement> _paths = new();
-        private readonly List<Comune> _comuni = new();
+        private readonly List<Municipality> _municipalities = new();
 
-        /// <summary>Elenco dei comuni caricati dalla mappa. Gli elementi restano mutabili
-        /// (es. IdProprietario), ma la lista stessa non può essere sostituita o alterata
-        /// dall'esterno.</summary>
-        public IReadOnlyList<Comune> Comuni => _comuni;
+        /// <summary>
+        /// List of municipalities loaded from the map. The elements are still editable
+        /// (i.e. OwnerId), but the list itself cannot be replaced or altered from outside.
+        /// </summary>
+        public IReadOnlyList<Municipality> Municipalities => _municipalities;
 
-        // Coefficienti della trasformazione affine CAD -> SVG
+        // Coefficients of the conversion CAD -> SVG
         private const double ScaleX = 2.834809;
         private const double ScaleY = -2.834698;
         private const double OffsetX = 510.7850;
         private const double OffsetY = 715.5535;
 
-        // Pattern a strisce oblique per il territorio appena conquistato
-        private const string PatternConquistatoId = "pattern-conquistato";
+        // Strips Pattern for the territory that has just been conquered
+        private const string PatternConqueredId = "pattern-conquered";
         private const int PatternStripSize = 8;
 
-        public MapRenderer(string fileSvg, string cartellaOutput)
+        public MapRenderer(string fileSvg, string outputFolder)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(fileSvg);
 
@@ -43,110 +44,113 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             _fileSvg = fileSvg;
 
-            _outputFolder = cartellaOutput;
+            _outputFolder = outputFolder;
 
-            // Carica SVG
+            // Load SVG
             _svg = XDocument.Load(_fileSvg);
 
-            // Trova il gruppo Territori
-            _territori = _svg
+            // Find group 'Territories'
+            _territories = _svg
                 .Descendants(Ns + "g")
-                .FirstOrDefault(g => (string?)g.Attribute("id") == "Territori")
-                ?? throw new InvalidOperationException("Gruppo 'Territori' non trovato nell'SVG.");
+                .FirstOrDefault(g => (string?)g.Attribute("id") == "Territories")
+                ?? throw new InvalidOperationException("Gruppo 'Territories' non trovato nell'SVG.");
 
-            // Trova il gruppo NomiComuni
-            _nomiComuni = _svg
+            // Find group 'Names'
+            _names = _svg
                 .Descendants(Ns + "g")
-                .FirstOrDefault(g => (string?)g.Attribute("id") == "NomiComuni")
-                ?? throw new InvalidOperationException("Gruppo 'NomiComuni' non trovato nell'SVG.");
+                .FirstOrDefault(g => (string?)g.Attribute("id") == "Names")
+                ?? throw new InvalidOperationException("Gruppo 'Names' non trovato nell'SVG.");
 
-            // Indicizza tutti i path per id
-            CaricaPathsComuni();
+            // Indicize all the paths in a Dictionary by their id
+            LoadPathsFromSVG();
 
-            // Carica gli oggetti Comune nella lista
-            CaricaComuni();
+            // Load all the Municipalities in a List<T>
+            LoadMunicipalitiesList();
         }
 
-        public void Renderizza(IReadOnlyList<Comune> comuni, int turno = 0, int? idAttaccante = null, int? idConquistato = null, int? idOldProprietario = null)
+        public void Render(IReadOnlyList<Municipality> municipalities, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null)
         {
-            _nomiComuni.RemoveNodes();
+            _names.RemoveNodes();
 
-            foreach (Comune comune in comuni)
+            _svg.Root!
+            .Element(Ns + "defs")?
+            .Elements(Ns + "pattern")
+            .Where(p => ((string?)p.Attribute("id"))?.StartsWith($"{PatternConqueredId}_") == true)
+            .Remove();
+
+            foreach (Municipality municipality in municipalities)
             {
-                if (!_paths.TryGetValue(comune.Id, out XElement? path))
+                if (!_paths.TryGetValue(municipality.Id, out XElement? path))
                 {
-                    Logger.Log($"ATTENZIONE: territorio non trovato nell'SVG: {comune.Nome}");
+                    Logger.Log($"ATTENZIONE: territorio non trovato nell'SVG: {municipality.Name}");
                     continue;
                 }
 
-                // SETTA COLORE DEI TERRITORI
-                string? colore = comune.IdProprietario is int idProprietarioColore
-                    ? GetFillColorFromPath(idProprietarioColore)
-                    : GetFillColorFromPath(comune.Id);
+                // SET THE COLOR FOR TERRITORIES
+                string? color = municipality.OwnerId is int ownerId
+                    ? GetFillColorFromPath(ownerId)
+                    : GetFillColorFromPath(municipality.Id);
 
-                if (comune.Id == idConquistato && idOldProprietario != null)
+                if (municipality.Id == conqueredId && oldOwnerId != null)
                 {
-                    string? coloreVecchio = GetFillColorFromPath(idOldProprietario.Value);
-                    string? coloreNuovo = idAttaccante != null ? GetFillColorFromPath(idAttaccante.Value) : coloreVecchio;
+                    string? oldColor = GetFillColorFromPath(oldOwnerId.Value);
+                    string? newColor = attackerId != null ? GetFillColorFromPath(attackerId.Value) : oldColor;
 
-                    colore = $"url(#{AssicuraPatternConquista(comune.Id, coloreVecchio, coloreNuovo)})";
+                    color = $"url(#{AssignConquerPattern(municipality.Id, oldColor, newColor)})";
                 }
 
-                // EVIDENZIA COMUNI COINVOLTI
+                // HIGHLIGHT INVOLVED TERRITORIES
                 string stroke = "#000000";
                 string strokeWidth = "1";
 
-                if (idConquistato != null && comune.Id == idConquistato)
+                if (conqueredId != null && municipality.Id == conqueredId)
                 {
-                    stroke = "#FF0000"; // ROSSO
+                    stroke = "#FF0000"; // RED
                     strokeWidth = "3";
 
-                    if (comune.Id == idConquistato)
-                        MostraNome(comune);
+                    if (municipality.Id == conqueredId)
+                        ShowName(municipality);
                 }
-                else if (idAttaccante != null && comune.IdProprietario == idAttaccante)
+                else if (attackerId != null && municipality.OwnerId == attackerId)
                 {
-                    stroke = "#00FF00"; // VERDE
+                    stroke = "#00FF00"; // GREEN
                     strokeWidth = "3";
 
-                    if (comune.Id == idAttaccante)
-                        MostraNome(comune);
+                    if (municipality.Id == attackerId)
+                        ShowName(municipality);
                 }
-                else if (idOldProprietario != null && comune.IdProprietario == idOldProprietario)
+                else if (oldOwnerId != null && municipality.OwnerId == oldOwnerId)
                 {
-                    stroke = "#0000FF"; // BLU
+                    stroke = "#0000FF"; // BLUE
                     strokeWidth = "3";
 
-                    if (comune.Id == idOldProprietario)
-                        MostraNome(comune);
+                    if (municipality.Id == oldOwnerId)
+                        ShowName(municipality);
                 }
 
-                // APPLICA STILE
+                // APPLY STYLE
                 path.SetAttributeValue(
                     "style",
-                    $"fill:{colore};stroke:{stroke};stroke-width:{strokeWidth};stroke-miterlimit:10"
+                    $"fill:{color};stroke:{stroke};stroke-width:{strokeWidth};stroke-miterlimit:10"
                 );
             }
 
-            // RENDERIZZA I TERRITORI NELL'ORDINE:
-            // 1. CONQUISTATO
-            // 2. ATTACCANTE
-            // 3. VECCHIO PROPRIETARIO
-            // 4. ecc..
-            OrdinaTerritori(comuni, idOldProprietario, idAttaccante, idConquistato);
+
+            OrderTerritories(municipalities, oldOwnerId, attackerId, conqueredId);
+
 
             // OUTPUT IMG
-            string nomeFile = $"Mappa_Turno_{turno:D3}.svg";
-            string percorsoOutput = Path.Combine(_outputFolder, nomeFile);
+            string fileName = $"Mappa_Turno_{turn:D3}.svg";
+            string outputPath = Path.Combine(_outputFolder, fileName);
 
-            _svg.Save(percorsoOutput);
+            _svg.Save(outputPath);
 
-            Logger.Log($"Mappa salvata: {percorsoOutput}");
+            Logger.Log($"Mappa salvata: {outputPath}");
 
-            string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(percorsoOutput) + ".jpg");
-            GifMaker.ConvertSvgToJpg(percorsoOutput, fileJpg);
+            string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
+            //GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
 
-            Logger.Log($"Convertito: {Path.GetFileName(percorsoOutput)}");
+            Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
         }
 
         private string? GetFillColorFromPath(int id)
@@ -165,44 +169,51 @@ namespace CiociariaGuerraBot.ConsoleApp
                 .Trim();
         }
 
-        private void MostraNome(Comune comune)
+        private void ShowName(Municipality municipality)
         {
-            if (_paths.TryGetValue(comune.Id, out XElement? path))
+            if (_paths.TryGetValue(municipality.Id, out XElement? path))
             {
                 var name = path.Attribute("name")?.Value;
                 if (string.IsNullOrEmpty(name))
                     return;
 
                 XElement text = new XElement(Ns + "text");
-                text.SetAttributeValue("x", comune.BaricentroTerritorioX.ToString(CultureInfo.InvariantCulture));
-                text.SetAttributeValue("y", comune.BaricentroTerritorioY.ToString(CultureInfo.InvariantCulture));
-                text.SetAttributeValue("class", "nome-comune");
+                text.SetAttributeValue("x", municipality.TerritoryCentroid_X.ToString(CultureInfo.InvariantCulture));
+                text.SetAttributeValue("y", municipality.TerritoryCentroid_Y.ToString(CultureInfo.InvariantCulture));
+                text.SetAttributeValue("class", "municipality-name");
                 text.SetAttributeValue("style", "display:inline");
                 text.Value = name;
 
-                _nomiComuni.Add(text);
+                _names.Add(text);
             }
         }
 
-        private void OrdinaTerritori(IReadOnlyList<Comune> comuni, int? idOldProprietario, int? idAttaccante, int? idConquistato)
+        /// <summary>
+        /// Render the Territories in this order:
+        /// 1. Conquered
+        /// 2. Attecker
+        /// 3. Old Owner
+        /// 4. ecc..
+        /// </summary>
+        private void OrderTerritories(IReadOnlyList<Municipality> municipalities, int? oldOwnerId, int? attackerId, int? conqueredId)
         {
-            List<int> ordine = [];
+            List<int> order = [];
 
-            if (idOldProprietario != null)
+            if (oldOwnerId != null)
             {
-                ordine.AddRange(
-                    comuni.Where(c => (c.Id == idOldProprietario || c.IdProprietario == idOldProprietario) && c.Id != idConquistato).Select(c => c.Id)
+                order.AddRange(
+                    municipalities.Where(c => (c.Id == oldOwnerId || c.OwnerId == oldOwnerId) && c.Id != conqueredId).Select(c => c.Id)
                 );
             }
 
-            ordine.AddRange(
-                comuni.Where(c => (c.Id == idAttaccante || c.IdProprietario == idAttaccante) && c.Id != idConquistato).Select(c => c.Id)
+            order.AddRange(
+                municipalities.Where(c => (c.Id == attackerId || c.OwnerId == attackerId) && c.Id != conqueredId).Select(c => c.Id)
             );
 
-            if (idConquistato != null)
-                ordine.Add(idConquistato.Value);
+            if (conqueredId != null)
+                order.Add(conqueredId.Value);
 
-            foreach (int id in ordine)
+            foreach (int id in order)
             {
                 if (!_paths.TryGetValue(id, out XElement? path))
                     continue;
@@ -217,10 +228,12 @@ namespace CiociariaGuerraBot.ConsoleApp
             }
         }
 
-        // Crea (la prima volta) o aggiorna (nei turni successivi) un <pattern> a strisce oblique
-        // che alterna il colore del vecchio proprietario e quello dell'attaccante, e lo registra
-        // nel <defs> dell'SVG. Restituisce l'id del pattern, da usare come fill="url(#id)".
-        private string AssicuraPatternConquista(int idComune, string? coloreVecchio, string? coloreNuovo)
+        /// <summary>
+        /// Creates (first time) or updates (in the following turns) a stripped pattern which alternates the attacker 
+        /// and conquered colors, and registers it in the SVG defs. 
+        /// Returns the pattern id, to be used as fill="url(#id)".
+        /// </summary>
+        private string AssignConquerPattern(int municipalityId, string? oldColor, string? newColor)
         {
             XElement? defs = _svg.Root!.Element(Ns + "defs");
             if (defs == null)
@@ -229,7 +242,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 _svg.Root!.AddFirst(defs);
             }
 
-            string patternId = $"{PatternConquistatoId}_{idComune}";
+            string patternId = $"{PatternConqueredId}_{municipalityId}";
 
             XElement? pattern = defs.Elements(Ns + "pattern")
                 .FirstOrDefault(p => (string?)p.Attribute("id") == patternId);
@@ -246,29 +259,29 @@ namespace CiociariaGuerraBot.ConsoleApp
                 defs.Add(pattern);
             }
 
-            // Ricostruisce il contenuto ogni volta: i colori cambiano ad ogni conquista
-            // (vecchio proprietario e attaccante sono diversi turno per turno).
+            // Reloads the content every time: the colors changes at every conquer
+            // (old owner and attacker are different for every turn).
             pattern.RemoveNodes();
             pattern.Add(
                 new XElement(Ns + "rect",
                     new XAttribute("width", PatternStripSize),
                     new XAttribute("height", PatternStripSize),
-                    new XAttribute("fill", coloreVecchio ?? "#FFFFFF")),
+                    new XAttribute("fill", oldColor ?? "#FFFFFF")),
                 new XElement(Ns + "rect",
                     new XAttribute("width", PatternStripSize / 2),
                     new XAttribute("height", PatternStripSize),
-                    new XAttribute("fill", coloreNuovo ?? "#FFFFFF")));
+                    new XAttribute("fill", newColor ?? "#FFFFFF")));
 
             return patternId;
         }
 
-        private void CaricaPathsComuni()
+        private void LoadPathsFromSVG()
         {
-            foreach (XElement path in _territori.Descendants(Ns + "path"))
+            foreach (XElement path in _territories.Descendants(Ns + "path"))
             {
-                string? idAttr = path.Attribute("id")?.Value;
+                string? attrId = path.Attribute("id")?.Value;
 
-                if (idAttr != null && int.TryParse(idAttr, out int id))
+                if (attrId != null && int.TryParse(attrId, out int id))
                 {
                     _paths[id] = path;
                 }
@@ -277,19 +290,19 @@ namespace CiociariaGuerraBot.ConsoleApp
             Logger.Log($"Indicizzati {_paths.Count} Territori.");
         }
 
-        private void CaricaComuni()
+        private void LoadMunicipalitiesList()
         {
-            foreach (XElement path in _territori.Descendants(Ns + "path"))
+            foreach (XElement path in _territories.Descendants(Ns + "path"))
             {
-                string? idAttr = path.Attribute("id")?.Value;
-                string? nomeAttr = path.Attribute("name")?.Value;
+                string? attrId = path.Attribute("id")?.Value;
+                string? attrName = path.Attribute("name")?.Value;
                 string? xCadAttr = path.Attribute("x_cad")?.Value;
                 string? yCadAttr = path.Attribute("y_cad")?.Value;
 
-                if (idAttr == null || !int.TryParse(idAttr, out int id))
+                if (attrId == null || !int.TryParse(attrId, out int id))
                     continue;
 
-                if (string.IsNullOrWhiteSpace(nomeAttr))
+                if (string.IsNullOrWhiteSpace(attrName))
                 {
                     Logger.Log($"ATTENZIONE: nome mancante per id {id}");
                 }
@@ -298,18 +311,18 @@ namespace CiociariaGuerraBot.ConsoleApp
                     !double.TryParse(xCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double xCad) ||
                     !double.TryParse(yCadAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out double yCad))
                 {
-                    Logger.Log($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({nomeAttr})");
+                    Logger.Log($"ATTENZIONE: coordinate CAD mancanti/non valide per id {id} ({attrName})");
                     continue;
                 }
 
                 double xSvg = OffsetX + ScaleX * xCad;
                 double ySvg = OffsetY + ScaleY * yCad;
 
-                Comune comune = new(id, nomeAttr ?? String.Empty, xSvg, ySvg, id);
-                _comuni.Add(comune);
+                Municipality municipality = new(id, attrName ?? String.Empty, xSvg, ySvg, id);
+                _municipalities.Add(municipality);
             }
 
-            Logger.Log($"Caricati {_comuni.Count} Comuni.");
+            Logger.Log($"Caricati {_municipalities.Count} Comuni.");
         }
     }
 }
