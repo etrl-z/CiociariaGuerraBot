@@ -10,15 +10,18 @@ namespace CiociariaGuerraBot.ConsoleApp
         public static void Main(string[] args)
         {
             // --- LOAD CONFIGURATIONS ---
-            _outputFolder = ConfigurationManager.AppSettings["OutputFolder"] + $"\\{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
-            if (string.IsNullOrWhiteSpace(_outputFolder))
+            var outputFolderConf = ConfigurationManager.AppSettings["OutputFolder"];
+            if (string.IsNullOrWhiteSpace(outputFolderConf))
             {
                 throw new FileNotFoundException("ERRORE: chiave 'OutputFolder' non configurata.");
             }
 
+            var timestamp = $"{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
+
+            _outputFolder = outputFolderConf + $"\\{timestamp}";
             Directory.CreateDirectory(_outputFolder);
 
-            Logger._logPath = Path.Combine(_outputFolder, $"Run_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt");
+            Logger._logPath = Path.Combine(_outputFolder, $"Run_{timestamp}.txt");
 
             _svgMap = ConfigurationManager.AppSettings["SVG_Map"];
             if (string.IsNullOrWhiteSpace(_svgMap))
@@ -67,7 +70,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 Municipality attacker = Utilities.GetAttacker(municipalities, extractedMunicipality);
                 Logger.Log($"Attaccante: {attacker.Id} | {attacker.Name}");
 
-                Municipality conquered = Utilities.GetConquered(municipalities, attacker);
+                Municipality? conquered = Utilities.GetConquered(municipalities, attacker);
                 if (conquered == null)
                 {
                     Logger.Log("Nessun bersaglio disponibile per l'attaccante estratto, salto il turno.");
@@ -82,7 +85,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             Logger.Log("---------------------------------------------------------------------------------------------------------------------------");
 
-            Municipality? winner = municipalities.FirstOrDefault(c => c.Id == activeMunicipalities.FirstOrDefault());
+            Municipality? winner = municipalities.FirstOrDefault(c => c.Id == (activeMunicipalities.Count == 1 ? activeMunicipalities.First() : null));
 
             if (winner != null)
             {

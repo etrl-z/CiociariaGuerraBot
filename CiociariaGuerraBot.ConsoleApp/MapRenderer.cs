@@ -17,6 +17,8 @@ namespace CiociariaGuerraBot.ConsoleApp
         private readonly XElement _names;
 
         private readonly Dictionary<int, XElement> _paths = new();
+        private readonly Dictionary<int, string> _originalColors = new();
+
         private readonly List<Municipality> _municipalities = new();
 
         /// <summary>
@@ -153,21 +155,10 @@ namespace CiociariaGuerraBot.ConsoleApp
             Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
         }
 
-        private string? GetFillColorFromPath(int id)
-        {
-            if (!_paths.TryGetValue(id, out XElement? path))
-            {
-                Logger.Log($"Path non trovato per ID {id}");
-                return "#FFFFFF";
-            }
 
-            string? style = path.Attribute("style")?.Value;
-            return style?
-                .Split(';')
-                .FirstOrDefault(x => x.TrimStart().StartsWith("fill:"))?
-                .Split(':', 2)[1]
-                .Trim();
-        }
+        private string GetFillColorFromPath(int id) =>
+            _originalColors.TryGetValue(id, out string? c) ? c : "#FFFFFF";
+
 
         private void ShowName(Municipality municipality)
         {
@@ -284,6 +275,12 @@ namespace CiociariaGuerraBot.ConsoleApp
                 if (attrId != null && int.TryParse(attrId, out int id))
                 {
                     _paths[id] = path;
+
+                    string? fill = path.Attribute("style")?.Value?
+                    .Split(';').FirstOrDefault(x => x.TrimStart().StartsWith("fill:"))?
+                    .Split(':', 2)[1].Trim();
+
+                    _originalColors[id] = fill ?? "#FFFFFF";
                 }
             }
 

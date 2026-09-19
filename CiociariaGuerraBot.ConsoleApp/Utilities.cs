@@ -21,7 +21,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             return attacker;
         }
 
-        public static Municipality GetConquered(IReadOnlyList<Municipality> municipalities, Municipality attacker)
+        public static Municipality? GetConquered(IReadOnlyList<Municipality> municipalities, Municipality attacker)
         {
             Municipality? conquered = municipalities
                     .Where(c => c.Id != attacker.Id)
@@ -29,7 +29,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                     .OrderBy(c => attacker.DistanceFrom(c))
                     .FirstOrDefault();
 
-            return conquered ?? new Municipality();
+            return conquered;
         }
 
         public static void ConquerHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int conqueredId)
@@ -45,7 +45,10 @@ namespace CiociariaGuerraBot.ConsoleApp
                 ? municipalities.First(c => c.Id == ownerId)
                 : conquered;
 
-            // CHANGE THE OWNER
+            // CHANGE THE OWNER FOR EVERY TERRITORY HANDED BY THE OLD ONE
+            foreach (Municipality t in municipalities.Where(t => t.OwnerId == conquered.Id && t.Id != conquered.Id))
+                t.OwnerId = attacker.Id;
+
             conquered.OwnerId = attacker.Id;
 
             GenerateText(municipalities, attacker, conquered, oldOwner);
@@ -56,6 +59,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             // RECALCULATE CENTROIDS FOR BOTH NEW AND OLD OWNER
             RecalculateCentroid(attacker, municipalities);
+            RecalculateCentroid(conquered, municipalities);
             RecalculateCentroid(oldOwner, municipalities);
 
             GenerateReport(municipalities);
@@ -72,7 +76,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 : $", precedentemente appartenente al Comune di {oldOwner.Name}.");
 
             // Total defeat can be declared wher NO other territory refers to the 'oldOwner' as its Owner
-            bool hasTerritories = municipalities.Any(c => c.OwnerId == oldOwner.Id);
+            bool hasTerritories = municipalities.Any(c => c.Id != oldOwner.Id && c.OwnerId == oldOwner.Id);
             if (!hasTerritories)
             {
                 Logger.Log($"Il Comune di {oldOwner.Name} è stato completamente sconfitto.");
@@ -99,14 +103,16 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         static void RecalculateCentroid(Municipality owner, IReadOnlyList<Municipality> municipalities)
         {
-            List<Municipality> territories = municipalities.Where(c => c.Id == owner.Id || c.OwnerId == owner.Id).ToList();
-
-            if (territories.Count == 0)
+            // A conquered municipality is no longer a Owner:
+            // its centroid gets back to the original territory
+            if (owner.OwnerId is int oid && oid != owner.Id)
             {
                 owner.TerritoryCentroid_X = owner.OriginCentroid_X;
                 owner.TerritoryCentroid_Y = owner.OriginCentroid_Y;
                 return;
             }
+
+            List<Municipality> territories = municipalities.Where(c => c.Id == owner.Id || c.OwnerId == owner.Id).ToList();
 
             owner.TerritoryCentroid_X = territories.Average(c => c.OriginCentroid_X);
             owner.TerritoryCentroid_Y = territories.Average(c => c.OriginCentroid_Y);
