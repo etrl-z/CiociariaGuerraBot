@@ -103,7 +103,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             // GENERATE GIF
             // ----------------------------------------------------------------------------------------------------
 
-            //GifMaker.CreateGif(_outputFolder);
+            GifMaker.CreateGif(_outputFolder);
 
             // ----------------------------------------------------------------------------------------------------
 

@@ -150,7 +150,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             Logger.Log($"Mappa salvata: {outputPath}");
 
             string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
-            //GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
+            GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
 
             Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
         }
