@@ -45,9 +45,10 @@ namespace CiociariaGuerraBot.ConsoleApp
                 ? municipalities.First(c => c.Id == ownerId)
                 : conquered;
 
-            // CHANGE THE OWNER FOR EVERY TERRITORY HANDED BY THE OLD ONE
-            foreach (Municipality t in municipalities.Where(t => t.OwnerId == conquered.Id && t.Id != conquered.Id))
-                t.OwnerId = attacker.Id;
+            // [Obsolete]
+            // CHANGE THE OWNER FOR EVERY TERRITORY HANDLED BY THE OLD ONE
+            //foreach (Municipality t in municipalities.Where(t => t.OwnerId == conquered.Id && t.Id != conquered.Id))
+            //    t.OwnerId = attacker.Id;
 
             conquered.OwnerId = attacker.Id;
 
@@ -101,21 +102,19 @@ namespace CiociariaGuerraBot.ConsoleApp
             }
         }
 
-        static void RecalculateCentroid(Municipality owner, IReadOnlyList<Municipality> municipalities)
+        static void RecalculateCentroid(Municipality entity, IReadOnlyList<Municipality> municipalities)
         {
-            // A conquered municipality is no longer a Owner:
-            // its centroid gets back to the original territory
-            if (owner.OwnerId is int oid && oid != owner.Id)
+            List<Municipality> territories = municipalities.Where(c => c.OwnerId == entity.Id).ToList();
+
+            if (territories.Count == 0)
             {
-                owner.TerritoryCentroid_X = owner.OriginCentroid_X;
-                owner.TerritoryCentroid_Y = owner.OriginCentroid_Y;
+                entity.TerritoryCentroid_X = entity.OriginCentroid_X;
+                entity.TerritoryCentroid_Y = entity.OriginCentroid_Y;
                 return;
             }
 
-            List<Municipality> territories = municipalities.Where(c => c.Id == owner.Id || c.OwnerId == owner.Id).ToList();
-
-            owner.TerritoryCentroid_X = territories.Average(c => c.OriginCentroid_X);
-            owner.TerritoryCentroid_Y = territories.Average(c => c.OriginCentroid_Y);
+            entity.TerritoryCentroid_X = territories.Average(c => c.OriginCentroid_X);
+            entity.TerritoryCentroid_Y = territories.Average(c => c.OriginCentroid_Y);
         }
     }
 }
