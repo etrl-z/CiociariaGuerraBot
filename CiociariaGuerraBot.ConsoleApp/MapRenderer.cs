@@ -110,25 +110,24 @@ namespace CiociariaGuerraBot.ConsoleApp
                 {
                     stroke = "#FF0000"; // RED
                     strokeWidth = "3";
-
-                    if (municipality.Id == conqueredId)
-                        ShowName(municipality);
                 }
                 else if (attackerId != null && municipality.OwnerId == attackerId)
                 {
                     stroke = "#00FF00"; // GREEN
                     strokeWidth = "3";
-
-                    if (municipality.Id == attackerId)
-                        ShowName(municipality);
                 }
                 else if (oldOwnerId != null && municipality.OwnerId == oldOwnerId)
                 {
                     stroke = "#0000FF"; // BLUE
                     strokeWidth = "3";
+                }
 
-                    if (municipality.Id == oldOwnerId)
-                        ShowName(municipality);
+                // SHOW NAMES OF ALL INVOLVED MUNICIPALITIES
+                if (municipality.Id == conqueredId ||
+                    municipality.Id == attackerId ||
+                    municipality.Id == oldOwnerId)
+                {
+                    ShowName(municipality);
                 }
 
                 // APPLY STYLE
