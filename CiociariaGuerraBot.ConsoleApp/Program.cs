@@ -6,6 +6,14 @@ namespace CiociariaGuerraBot.ConsoleApp
     {
         private static string? _outputFolder;
         private static string? _svgMap;
+        private static bool _isTest;
+        private static int _gameMode;
+
+        private enum GameMode
+        {
+            Short,
+            Long
+        }
 
         public static void Main(string[] args)
         {
@@ -22,6 +30,9 @@ namespace CiociariaGuerraBot.ConsoleApp
             Directory.CreateDirectory(_outputFolder);
 
             Logger._logPath = Path.Combine(_outputFolder, $"Run_{timestamp}.txt");
+
+            _isTest = Convert.ToBoolean(ConfigurationManager.AppSettings["isTest"]);
+            _gameMode = Convert.ToInt32(ConfigurationManager.AppSettings["gameMode"]);
 
             _svgMap = ConfigurationManager.AppSettings["SVG_Map"];
             if (string.IsNullOrWhiteSpace(_svgMap))
@@ -64,7 +75,22 @@ namespace CiociariaGuerraBot.ConsoleApp
                 Logger.Log($"TURNO {indexer}");
                 Logger.Log($"{activeMunicipalities.Count} Comuni in gara");
 
-                Municipality extractedMunicipality = municipalities[Random.Shared.Next(municipalities.Count)];
+                Municipality extractedMunicipality;
+
+                if (_gameMode == (int)GameMode.Short)
+                {
+                    extractedMunicipality = municipalities[Random.Shared.Next(municipalities.Count)];
+                }
+                else if (_gameMode == (int)GameMode.Long)
+                {
+                    extractedMunicipality = municipalities.First(c => c.Id == activeMunicipalities[Random.Shared.Next(activeMunicipalities.Count)]);
+                }
+                else
+                {
+                    Logger.Log("ERRORE: codice modalità non valido.");
+                    return;
+                }
+
                 Logger.Log($"Id estratto: {extractedMunicipality.Id} | {extractedMunicipality.Name}");
 
                 Municipality attacker = Utilities.GetAttacker(municipalities, extractedMunicipality);
@@ -77,7 +103,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                     continue;
                 }
 
-                Utilities.ConquerHandler(renderer, indexer, municipalities, attacker.Id, conquered.Id);
+                Utilities.ConquerHandler(renderer, indexer, municipalities, attacker.Id, conquered.Id, _isTest);
 
                 activeMunicipalities = Utilities.GetActiveMunicipalities(municipalities);
                 Logger.Log($"{activeMunicipalities.Count} {(activeMunicipalities.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
@@ -89,7 +115,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             if (winner != null)
             {
-                renderer.Render(municipalities, ++indexer, winner.Id);
+                renderer.Render(municipalities, ++indexer, winner.Id, null, null, _isTest);
 
                 Logger.Log($"{winner.Name} ha interamente conquistato la Ciociaria.");
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
@@ -103,7 +129,8 @@ namespace CiociariaGuerraBot.ConsoleApp
             // GENERATE GIF
             // ----------------------------------------------------------------------------------------------------
 
-            GifMaker.CreateGif(_outputFolder);
+            if (!_isTest)
+                GifMaker.CreateGif(_outputFolder);
 
             // ----------------------------------------------------------------------------------------------------
 

@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -70,7 +71,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             LoadMunicipalitiesList();
         }
 
-        public void Render(IReadOnlyList<Municipality> municipalities, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null)
+        public void Render(IReadOnlyList<Municipality> municipalities, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null, bool isTest = true)
         {
             _names.RemoveNodes();
 
@@ -149,10 +150,13 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             Logger.Log($"Mappa salvata: {outputPath}");
 
-            string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
-            GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
+            if (!isTest)
+            {
+                string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
+                GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
 
-            Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
+                Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
+            }
         }
 
 

@@ -32,7 +32,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             return conquered;
         }
 
-        public static void ConquerHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int conqueredId)
+        public static void ConquerHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int conqueredId, bool isTest)
         {
             Municipality? attacker = municipalities.FirstOrDefault(c => c.Id == attackerId);
             Municipality? conquered = municipalities.FirstOrDefault(c => c.Id == conqueredId);
@@ -55,7 +55,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             GenerateText(municipalities, attacker, conquered, oldOwner);
 
 
-            renderer.Render(municipalities, indexer, attacker.Id, conquered.Id, oldOwner.Id);
+            renderer.Render(municipalities, indexer, attacker.Id, conquered.Id, oldOwner.Id, isTest);
 
 
             // RECALCULATE CENTROIDS FOR BOTH NEW AND OLD OWNER
@@ -63,7 +63,8 @@ namespace CiociariaGuerraBot.ConsoleApp
             RecalculateCentroid(conquered, municipalities);
             RecalculateCentroid(oldOwner, municipalities);
 
-            GenerateReport(municipalities);
+            if (isTest)
+                GenerateReport(municipalities);
 
         }
 

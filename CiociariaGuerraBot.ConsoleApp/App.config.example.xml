@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<appSettings>
+		<add key="SVG_Map" value="...\\Models\\SVG_Map.svg" />
+		<add key="OutputFolder" value="...\\Output" />
+		<add key="isTest" value="true" />
+		<add key="gameMode" value="0" />
+	</appSettings>
+</configuration>
