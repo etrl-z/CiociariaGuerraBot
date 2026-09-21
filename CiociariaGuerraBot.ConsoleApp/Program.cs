@@ -6,7 +6,9 @@ namespace CiociariaGuerraBot.ConsoleApp
     {
         private static string? _outputFolder;
         private static string? _svgMap;
-        private static bool _isTest;
+
+        private static bool _isDebug;
+        private static bool _createGif;
         private static int _gameMode;
 
         private enum GameMode
@@ -31,7 +33,8 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             Logger._logPath = Path.Combine(_outputFolder, $"Run_{timestamp}.txt");
 
-            _isTest = Convert.ToBoolean(ConfigurationManager.AppSettings["isTest"]);
+            _isDebug = Convert.ToBoolean(ConfigurationManager.AppSettings["isDebug"]);
+            _createGif = Convert.ToBoolean(ConfigurationManager.AppSettings["createGif"]);
             _gameMode = Convert.ToInt32(ConfigurationManager.AppSettings["gameMode"]);
 
             _svgMap = ConfigurationManager.AppSettings["SVG_Map"];
@@ -103,7 +106,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                     continue;
                 }
 
-                Utilities.ConquerHandler(renderer, indexer, municipalities, attacker.Id, conquered.Id, _isTest);
+                Utilities.ConquestHandler(renderer, indexer, municipalities, attacker.Id, conquered.Id, _isDebug);
 
                 activeMunicipalities = Utilities.GetActiveMunicipalities(municipalities);
                 Logger.Log($"{activeMunicipalities.Count} {(activeMunicipalities.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
@@ -115,7 +118,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             if (winner != null)
             {
-                Utilities.ConquerHandler(renderer, ++indexer, municipalities, winner.Id, null, _isTest);
+                Utilities.ConquestHandler(renderer, ++indexer, municipalities, winner.Id, null, _isDebug);
 
                 Logger.Log($"{winner.Name} ha interamente conquistato la Ciociaria.");
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
@@ -129,14 +132,11 @@ namespace CiociariaGuerraBot.ConsoleApp
             // GENERATE GIF
             // ----------------------------------------------------------------------------------------------------
 
-            if (!_isTest)
+            if (_createGif)
                 GifMaker.CreateGif(_outputFolder);
 
             // ----------------------------------------------------------------------------------------------------
 
-
-            Console.WriteLine("Premi un tasto per uscire...");
-            Console.ReadKey();
         }
     }
 }

@@ -3,7 +3,8 @@
 	<appSettings>
 		<add key="SVG_Map" value="...\\Models\\SVG_Map.svg" />
 		<add key="OutputFolder" value="...\\Output" />
-		<add key="isTest" value="true" />
+		<add key="isDebug" value="false" />
+		<add key="createGif" value="false" />
 		<add key="gameMode" value="0" />
 	</appSettings>
 </configuration>

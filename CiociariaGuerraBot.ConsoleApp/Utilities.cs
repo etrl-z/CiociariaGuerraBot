@@ -32,7 +32,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             return conquered;
         }
 
-        public static void ConquerHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int? conqueredId, bool isTest)
+        public static void ConquestHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int? conqueredId, bool isDebug)
         {
             Municipality? attacker = municipalities.FirstOrDefault(c => c.Id == attackerId);
             Municipality? conquered = municipalities.FirstOrDefault(c => c.Id == conqueredId);
@@ -42,38 +42,43 @@ namespace CiociariaGuerraBot.ConsoleApp
                 ? municipalities.First(c => c.Id == ownerId)
                 : conquered;
 
-            // [Obsolete]
-            // CHANGE THE OWNER FOR EVERY TERRITORY HANDLED BY THE OLD ONE
-            //foreach (Municipality t in municipalities.Where(t => t.OwnerId == conquered.Id && t.Id != conquered.Id))
-            //    t.OwnerId = attacker.Id;
+            if (attacker == null) return;
 
-            if (attacker != null && conquered != null && oldOwner != null)
+            // STANDARD CONQUEST
+            if (conquered != null && oldOwner != null)
             {
+                // CHANGE THE OWNER 
                 conquered.OwnerId = attacker.Id;
 
+                // GENERATE TEXT
                 GenerateText(municipalities, attacker, conquered, oldOwner);
+
+                // RECALCULATE CENTROIDS FOR BOTH NEW AND OLD OWNER
+                RecalculateCentroid(attacker, municipalities);
+                RecalculateCentroid(conquered, municipalities);
+                RecalculateCentroid(oldOwner, municipalities);
             }
 
             // RENDER IMAGE AND RETURN JPG PATH
-            string outputJpg = renderer.Render(municipalities, indexer, attacker?.Id, conquered?.Id, oldOwner?.Id, isTest);
+            string outputJpg = renderer.Render(municipalities, isDebug, indexer, attacker?.Id, conquered?.Id, oldOwner?.Id);
 
             if (!String.IsNullOrEmpty(outputJpg))
             {
                 // LOAD BASE64 ON FIREBASE
-                FirebaseClient.Load(outputJpg).Wait();
+                try
+                {
+                    FirebaseClient.Load(outputJpg).Wait();
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("ERROR: Errore nel caricamento su Firestore. | " + e.Message);
+                }
             }
 
-            if (attacker == null || conquered == null || oldOwner == null)
-                return;
-
-            // RECALCULATE CENTROIDS FOR BOTH NEW AND OLD OWNER
-            RecalculateCentroid(attacker, municipalities);
-            RecalculateCentroid(conquered, municipalities);
-            RecalculateCentroid(oldOwner, municipalities);
-
-            if (isTest)
+            if (isDebug)
+            {
                 GenerateReport(municipalities);
-
+            }
         }
 
         public static void GenerateText(IReadOnlyList<Municipality> municipalities, Municipality attacker, Municipality conquered, Municipality oldOwner)

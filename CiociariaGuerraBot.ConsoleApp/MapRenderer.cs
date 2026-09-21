@@ -10,6 +10,7 @@ namespace CiociariaGuerraBot.ConsoleApp
     {
         private readonly string _fileSvg;
         private readonly string _outputFolder;
+        private string _outputJpg = string.Empty;
 
         private static readonly XNamespace Ns = "http://www.w3.org/2000/svg";
 
@@ -71,7 +72,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             LoadMunicipalitiesList();
         }
 
-        public string Render(IReadOnlyList<Municipality> municipalities, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null, bool isTest = true)
+        public string Render(IReadOnlyList<Municipality> municipalities, bool isDebug, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null)
         {
             _names.RemoveNodes();
 
@@ -141,7 +142,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             OrderTerritories(municipalities, oldOwnerId, attackerId, conqueredId);
 
 
-            // OUTPUT IMG
+            // OUTPUT SVG IMG
             string fileName = $"Mappa_Turno_{turn:D3}.svg";
             string outputPath = Path.Combine(_outputFolder, fileName);
 
@@ -149,17 +150,18 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             Logger.Log($"Mappa salvata: {outputPath}");
 
-            string outputJpg = "";
-            if (!isTest)
-            {
-                string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
-                GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
 
-                Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
-                outputJpg = fileJpg;
-            }
+            if (isDebug)
+                return _outputJpg;
 
-            return outputJpg;
+            // CONVERSION TO JPG
+            string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
+            GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
+
+            Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
+            _outputJpg = fileJpg;
+
+            return _outputJpg;
         }
 
 
