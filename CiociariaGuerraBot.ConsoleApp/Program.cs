@@ -28,7 +28,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             var timestamp = $"{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
 
-            _outputFolder = outputFolderConf + $"\\{timestamp}";
+            _outputFolder = Path.GetFullPath(Path.Combine(outputFolderConf, timestamp));
             Directory.CreateDirectory(_outputFolder);
 
             Logger._logPath = Path.Combine(_outputFolder, $"Run_{timestamp}.txt");
