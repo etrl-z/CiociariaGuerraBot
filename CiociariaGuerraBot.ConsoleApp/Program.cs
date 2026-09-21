@@ -115,7 +115,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             if (winner != null)
             {
-                renderer.Render(municipalities, ++indexer, winner.Id, null, null, _isTest);
+                Utilities.ConquerHandler(renderer, ++indexer, municipalities, winner.Id, null, _isTest);
 
                 Logger.Log($"{winner.Name} ha interamente conquistato la Ciociaria.");
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");

@@ -71,7 +71,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             LoadMunicipalitiesList();
         }
 
-        public void Render(IReadOnlyList<Municipality> municipalities, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null, bool isTest = true)
+        public string Render(IReadOnlyList<Municipality> municipalities, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null, bool isTest = true)
         {
             _names.RemoveNodes();
 
@@ -149,13 +149,17 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             Logger.Log($"Mappa salvata: {outputPath}");
 
+            string outputJpg = "";
             if (!isTest)
             {
                 string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
                 GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
 
                 Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
+                outputJpg = fileJpg;
             }
+
+            return outputJpg;
         }
 
 

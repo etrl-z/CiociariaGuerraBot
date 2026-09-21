@@ -32,16 +32,13 @@ namespace CiociariaGuerraBot.ConsoleApp
             return conquered;
         }
 
-        public static void ConquerHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int conqueredId, bool isTest)
+        public static void ConquerHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int? conqueredId, bool isTest)
         {
             Municipality? attacker = municipalities.FirstOrDefault(c => c.Id == attackerId);
             Municipality? conquered = municipalities.FirstOrDefault(c => c.Id == conqueredId);
 
-            if (attacker == null || conquered == null)
-                return;
-
             // SAVE OLD OWNER (cannot be null: it's either the real owner, or the municipality itself)
-            Municipality oldOwner = conquered.OwnerId is int ownerId
+            Municipality? oldOwner = conquered?.OwnerId is int ownerId
                 ? municipalities.First(c => c.Id == ownerId)
                 : conquered;
 
@@ -50,13 +47,24 @@ namespace CiociariaGuerraBot.ConsoleApp
             //foreach (Municipality t in municipalities.Where(t => t.OwnerId == conquered.Id && t.Id != conquered.Id))
             //    t.OwnerId = attacker.Id;
 
-            conquered.OwnerId = attacker.Id;
+            if (attacker != null && conquered != null && oldOwner != null)
+            {
+                conquered.OwnerId = attacker.Id;
 
-            GenerateText(municipalities, attacker, conquered, oldOwner);
+                GenerateText(municipalities, attacker, conquered, oldOwner);
+            }
 
+            // RENDER IMAGE AND RETURN JPG PATH
+            string outputJpg = renderer.Render(municipalities, indexer, attacker?.Id, conquered?.Id, oldOwner?.Id, isTest);
 
-            renderer.Render(municipalities, indexer, attacker.Id, conquered.Id, oldOwner.Id, isTest);
+            if (!String.IsNullOrEmpty(outputJpg))
+            {
+                // LOAD BASE64 ON FIREBASE
+                FirebaseClient.Load(outputJpg).Wait();
+            }
 
+            if (attacker == null || conquered == null || oldOwner == null)
+                return;
 
             // RECALCULATE CENTROIDS FOR BOTH NEW AND OLD OWNER
             RecalculateCentroid(attacker, municipalities);
