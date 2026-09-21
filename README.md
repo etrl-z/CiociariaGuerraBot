@@ -13,17 +13,20 @@ A simulation game where the municipalities of the province of Frosinone fight to
 * A municipality is eliminated when it no longer owns any territory.
 * The game continues until only one owner remains.
 
+The game provides two modes:
+* **Short** → The classic mode. If a captured territory is extracted, its owner becomes the attacker. The more territories a player owns, the higher their probability of being selected as the attacker.
+
+* **Long** → The hardcore mode. Once a territory is captured, it can no longer be extracted. The extraction takes place among the territories that are still alive. The probability of being selected is proportional to the number of "alive" territories.
+
 ## Output
 
-After each turn, the map is rendered as an SVG.
-
-At the end of the simulation the images are converted:
+After each turn, the map is rendered as an SVG and converted in a Base64 encoded JPG. The result is then uploaded in Firestore via Google APIs.
 
 ```text
-SVG → JPG → Animated GIF
+SVG → JPG → Base64 → Firestore DB → Client
 ```
 
-The complete game is saved as a GIF, showing the evolution of the conquest from the initial map to the final winner.
+The complete game can optionally be saved as a GIF, showing the evolution of the conquest from the initial map to the final winner.
 
 ## Technologies
 
@@ -31,3 +34,4 @@ The complete game is saved as a GIF, showing the evolution of the conquest from 
 * .NET
 * SVG
 * GIF generation
+* Firestore APIs
