@@ -31,7 +31,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             _outputFolder = Path.GetFullPath(Path.Combine(outputFolderConf, timestamp));
             Directory.CreateDirectory(_outputFolder);
 
-            Logger._logPath = Path.Combine(_outputFolder, $"Run_{timestamp}.txt");
+            Logger._logPath = Path.GetFullPath(Path.Combine(_outputFolder, $"Run_{timestamp}.txt"));
 
             _isDebug = Convert.ToBoolean(ConfigurationManager.AppSettings["isDebug"]);
             _createGif = Convert.ToBoolean(ConfigurationManager.AppSettings["createGif"]);

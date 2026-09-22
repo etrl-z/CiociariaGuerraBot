@@ -361,5 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/CiociariaGuerraBot.ConsoleApp/App.config
-/CiociariaGuerraBot.ConsoleApp/firebaseConfiguration.json
+*/App.config
+*/firebaseConfiguration.json
+Output/*
