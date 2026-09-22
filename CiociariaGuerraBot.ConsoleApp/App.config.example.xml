@@ -7,9 +7,9 @@
 		<add key="createGif" value="false" />
 		<add key="gameMode" value="0" />
 
-		<add key="ScaleX" value="2,834809" />
-		<add key="ScaleY" value="-2,834698" />
-		<add key="OffsetX" value="510,7850" />
-		<add key="OffsetY" value="715,5535" />
+		<add key="ScaleX" value="2.834809" />
+		<add key="ScaleY" value="-2.834698" />
+		<add key="OffsetX" value="510.7850" />
+		<add key="OffsetY" value="715.5535" />
 	</appSettings>
 </configuration>

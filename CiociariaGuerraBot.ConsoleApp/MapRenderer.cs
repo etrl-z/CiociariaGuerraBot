@@ -30,10 +30,10 @@ namespace CiociariaGuerraBot.ConsoleApp
         public IReadOnlyList<Municipality> Municipalities => _municipalities;
 
         // Coefficients of the conversion CAD -> SVG
-        private readonly double ScaleX = Convert.ToDouble(ConfigurationManager.AppSettings["ScaleX"]);
-        private readonly double ScaleY = Convert.ToDouble(ConfigurationManager.AppSettings["ScaleY"]);
-        private readonly double OffsetX = Convert.ToDouble(ConfigurationManager.AppSettings["OffsetX"]);
-        private readonly double OffsetY = Convert.ToDouble(ConfigurationManager.AppSettings["OffsetY"]);
+        private readonly double ScaleX = double.Parse(ConfigurationManager.AppSettings["ScaleX"] ?? "", CultureInfo.InvariantCulture);
+        private readonly double ScaleY = double.Parse(ConfigurationManager.AppSettings["ScaleY"] ?? "", CultureInfo.InvariantCulture);
+        private readonly double OffsetX = double.Parse(ConfigurationManager.AppSettings["OffsetX"] ?? "", CultureInfo.InvariantCulture);
+        private readonly double OffsetY = double.Parse(ConfigurationManager.AppSettings["OffsetY"] ?? "", CultureInfo.InvariantCulture);
 
         // Strips Pattern for the territory that has just been conquered
         private const string PatternConqueredId = "pattern-conquered";
