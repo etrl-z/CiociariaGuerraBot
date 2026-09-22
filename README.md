@@ -35,3 +35,9 @@ The complete game can optionally be saved as a GIF, showing the evolution of the
 * SVG
 * GIF generation
 * Firestore APIs
+
+## Credits
+
+This is a fully custom prototype that only uses local CAD and SVG manipulation logic, and does not rely on any API for the Map generation.
+
+Totally inspired by https://worldwarbot.com/ .
