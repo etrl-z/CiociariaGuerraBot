@@ -24,7 +24,6 @@ namespace CiociariaGuerraBot.ConsoleApp
         public static Municipality? GetConquered(IReadOnlyList<Municipality> municipalities, Municipality attacker)
         {
             Municipality? conquered = municipalities
-                    .Where(c => c.Id != attacker.Id)
                     .Where(c => c.OwnerId != attacker.Id)
                     .OrderBy(c => attacker.DistanceFrom(c))
                     .FirstOrDefault();
