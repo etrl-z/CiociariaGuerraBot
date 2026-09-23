@@ -66,7 +66,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 // LOAD BASE64 ON FIREBASE
                 try
                 {
-                    FirebaseClient.Load(outputJpg).Wait();
+                    FirebaseClient.LoadImage(outputJpg).Wait();
                 }
                 catch (Exception e)
                 {

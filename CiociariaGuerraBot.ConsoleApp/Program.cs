@@ -26,7 +26,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 throw new FileNotFoundException("ERRORE: chiave 'OutputFolder' non configurata.");
             }
 
-            var timestamp = $"{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
+            string timestamp = $"{DateTime.Now:yyyy_MM_dd_HH_mm_ss}";
 
             _outputFolder = Path.GetFullPath(Path.Combine(outputFolderConf, timestamp));
             Directory.CreateDirectory(_outputFolder);
@@ -118,10 +118,15 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             if (winner != null)
             {
-                Utilities.ConquestHandler(renderer, ++indexer, municipalities, winner.Id, null, _isDebug);
+                indexer++;
+                Utilities.ConquestHandler(renderer, indexer, municipalities, winner.Id, null, _isDebug);
 
                 Logger.Log($"{winner.Name} ha interamente conquistato la Ciociaria.");
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
+
+
+                FirebaseClient.LoadVictory(timestamp, winner.Id, indexer).Wait();
+
             }
             else
             {

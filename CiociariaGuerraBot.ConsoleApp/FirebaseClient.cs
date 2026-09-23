@@ -4,11 +4,12 @@ namespace CiociariaGuerraBot.ConsoleApp
 {
     internal class FirebaseClient
     {
-        public static async Task Load(string imagePath)
-        {
-            string projectId = "base64-image-visualizer";
+        private static string projectId = "base64-image-visualizer";
+        private static string? credentialsPath;
 
-            string credentialsPath = Path.Combine(
+        public static async Task LoadImage(string imagePath)
+        {
+            credentialsPath = Path.Combine(
                 AppContext.BaseDirectory,
                 "firebaseConfiguration.json"
             );
@@ -41,6 +42,36 @@ namespace CiociariaGuerraBot.ConsoleApp
             Logger.Log($"Dimensione originale: {imageBytes.Length:N0} byte");
             Logger.Log($"Dimensione Base64: {base64.Length:N0} caratteri");
 
+        }
+
+        public static async Task LoadVictory(string documentPath, int winnerId, int turn)
+        {
+            credentialsPath = Path.Combine(
+                AppContext.BaseDirectory,
+                "firebaseConfiguration.json"
+            );
+
+            Environment.SetEnvironmentVariable(
+                "GOOGLE_APPLICATION_CREDENTIALS",
+                credentialsPath
+            );
+
+            FirestoreDb db = await FirestoreDb.CreateAsync(projectId);
+
+            DocumentReference doc = db
+                .Collection("history")
+                .Document(documentPath);
+
+            Dictionary<string, object> data = new()
+            {
+                { "winner", winnerId },
+                { "duration", turn },
+                { "timestamp", Timestamp.GetCurrentTimestamp() }
+            };
+
+            await doc.SetAsync(data);
+
+            Logger.Log("Vittoria registrata su Firestore.");
         }
     }
 }
