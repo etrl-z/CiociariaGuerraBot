@@ -116,7 +116,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
             Municipality? winner = municipalities.FirstOrDefault(c => c.Id == (activeMunicipalities.Count == 1 ? activeMunicipalities.First() : null));
 
-            if (winner != null)
+            if (winner != null && winner.Name != null)
             {
                 indexer++;
                 Utilities.ConquestHandler(renderer, indexer, municipalities, winner.Id, null, _isDebug);
@@ -125,7 +125,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
 
 
-                FirebaseClient.LoadVictory(timestamp, winner.Id, indexer).Wait();
+                FirebaseClient.LoadVictory(timestamp, winner.Id, winner.Name, indexer).Wait();
 
             }
             else

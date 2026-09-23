@@ -44,7 +44,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         }
 
-        public static async Task LoadVictory(string documentPath, int winnerId, int turn)
+        public static async Task LoadVictory(string documentPath, int winnerId, string winnerName, int turn)
         {
             credentialsPath = Path.Combine(
                 AppContext.BaseDirectory,
@@ -65,6 +65,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             Dictionary<string, object> data = new()
             {
                 { "winner", winnerId },
+                { "winnerName", winnerName },
                 { "duration", turn },
                 { "timestamp", Timestamp.GetCurrentTimestamp() }
             };
