@@ -8,13 +8,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{9DF703
 		Models\SVG_Map.svg = Models\SVG_Map.svg
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiociariaGuerraBot.ConsoleApp", "CiociariaGuerraBot.ConsoleApp\CiociariaGuerraBot.ConsoleApp.csproj", "{1E36A152-00FE-5278-D841-B11689CBC6AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiociariaGuerraBot.Batch", "CiociariaGuerraBot.Batch\CiociariaGuerraBot.Batch.csproj", "{1E36A152-00FE-5278-D841-B11689CBC6AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementi di soluzione", "Elementi di soluzione", "{E3192084-1447-491F-A2BB-8D290B44CB7A}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiociariaGuerraBot.Core", "CiociariaGuerraBot.Core\CiociariaGuerraBot.Core.csproj", "{ABDEF9EE-C94C-4338-83D3-AE48D6CEF4A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiociariaGuerraBot.Replay", "CiociariaGuerraBot.Replay\CiociariaGuerraBot.Replay.csproj", "{499F7886-219D-4542-ABC7-DA9457D7DA76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +30,14 @@ Global
 		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E36A152-00FE-5278-D841-B11689CBC6AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABDEF9EE-C94C-4338-83D3-AE48D6CEF4A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDEF9EE-C94C-4338-83D3-AE48D6CEF4A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABDEF9EE-C94C-4338-83D3-AE48D6CEF4A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABDEF9EE-C94C-4338-83D3-AE48D6CEF4A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{499F7886-219D-4542-ABC7-DA9457D7DA76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{499F7886-219D-4542-ABC7-DA9457D7DA76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{499F7886-219D-4542-ABC7-DA9457D7DA76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{499F7886-219D-4542-ABC7-DA9457D7DA76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

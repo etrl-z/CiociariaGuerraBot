@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace CiociariaGuerraBot.ConsoleApp
+namespace CiociariaGuerraBot.Core
 {
-    sealed class MapRenderer
+    public class MapRenderer
     {
         private readonly string _fileSvg;
         private readonly string _outputFolder;
@@ -143,13 +143,10 @@ namespace CiociariaGuerraBot.ConsoleApp
 
 
             // OUTPUT SVG IMG
-            string fileName = $"Mappa_Turno_{turn:D3}.svg";
+            string fileName = $"Map_Turn_{turn:D3}.svg";
             string outputPath = Path.Combine(_outputFolder, fileName);
 
             _svg.Save(outputPath);
-
-            Logger.Log($"Mappa salvata: {outputPath}");
-
 
             if (isDebug)
                 return _outputJpg;
@@ -158,7 +155,6 @@ namespace CiociariaGuerraBot.ConsoleApp
             string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
             GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
 
-            Logger.Log($"Convertito: {Path.GetFileName(fileJpg)}");
             _outputJpg = fileJpg;
 
             return _outputJpg;
@@ -292,8 +288,6 @@ namespace CiociariaGuerraBot.ConsoleApp
                     _originalColors[id] = fill ?? "#FFFFFF";
                 }
             }
-
-            Logger.Log($"Indicizzati {_paths.Count} Territori.");
         }
 
         private void LoadMunicipalitiesList()
@@ -327,8 +321,6 @@ namespace CiociariaGuerraBot.ConsoleApp
                 Municipality municipality = new(id, attrName ?? String.Empty, xSvg, ySvg, id);
                 _municipalities.Add(municipality);
             }
-
-            Logger.Log($"Caricati {_municipalities.Count} Comuni.");
         }
     }
 }

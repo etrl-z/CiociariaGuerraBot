@@ -1,8 +1,8 @@
 ﻿using ImageMagick;
 
-namespace CiociariaGuerraBot.ConsoleApp
+namespace CiociariaGuerraBot.Core
 {
-    internal class GifMaker
+    public class GifMaker
     {
         public static void ConvertAllSvgToJpg(string folder)
         {
@@ -14,8 +14,6 @@ namespace CiociariaGuerraBot.ConsoleApp
                 );
 
                 ConvertSvgToJpg(fileSvg, fileJpg);
-
-                Logger.Log($"Convertito: {Path.GetFileName(fileSvg)}");
             }
         }
 
@@ -73,8 +71,6 @@ namespace CiociariaGuerraBot.ConsoleApp
             gif[0].AnimationIterations = 1;
 
             ExecuteWithProgressBar(() => gif.Write(fileGif));
-
-            Logger.Log($"GIF creata: {fileGif}");
         }
 
         static void ExecuteWithProgressBar(Action operation)

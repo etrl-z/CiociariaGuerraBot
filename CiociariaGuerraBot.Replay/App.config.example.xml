@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<appSettings>
+
+		<add key="gameToReplay" value="2026_09_24_11_00_00" />
+		
+		<add key="SVG_Map" value="...\\Models\\SVG_Map.svg" />
+		<add key="OutputFolder" value="...\\Output" />
+		<add key="isDebug" value="false" />
+		<add key="gameSpeed" value="0" />
+
+		<add key="ScaleX" value="2.834809" />
+		<add key="ScaleY" value="-2.834698" />
+		<add key="OffsetX" value="510.7850" />
+		<add key="OffsetY" value="715.5535" />
+	</appSettings>
+</configuration>

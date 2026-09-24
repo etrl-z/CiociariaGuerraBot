@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CiociariaGuerraBot.ConsoleApp
+namespace CiociariaGuerraBot.Core
 {
-    internal class Logger
+    public class Logger
     {
         public static string _logPath = ".";
 

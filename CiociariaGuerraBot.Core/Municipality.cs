@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CiociariaGuerraBot.ConsoleApp
+namespace CiociariaGuerraBot.Core
 {
-    internal class Municipality
+    public class Municipality
     {
         public int Id { get; set; }
         public string? Name { get; set; }

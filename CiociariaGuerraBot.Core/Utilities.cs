@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CiociariaGuerraBot.ConsoleApp
+namespace CiociariaGuerraBot.Core
 {
-    internal class Utilities
+    public class Utilities
     {
         public static IReadOnlyList<int> GetActiveMunicipalities(IReadOnlyList<Municipality> municipalities) =>
             municipalities.Select(c => c.OwnerId ?? c.Id).Distinct().ToList();

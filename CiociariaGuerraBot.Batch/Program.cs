@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
+using CiociariaGuerraBot.Core;
 
-namespace CiociariaGuerraBot.ConsoleApp
+namespace CiociariaGuerraBot.Batch
 {
     public class Program
     {
@@ -22,7 +23,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
         public static void Main(string[] args)
         {
-            // --- LOAD CONFIGURATIONS ---
+            #region LOAD CONFIGURATIONS
             var outputFolderConf = ConfigurationManager.AppSettings["OutputFolder"];
             if (string.IsNullOrWhiteSpace(outputFolderConf))
             {
@@ -47,6 +48,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 Logger.Log("ERRORE: chiave 'SVG_Map' non configurata.");
                 return;
             }
+            #endregion
 
             Logger.Log("START");
 
@@ -78,6 +80,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             while (activeMunicipalities.Count > 1)
             {
                 Logger.Log("---------------------------------------------------------------------------------------------------------------------------");
+
                 indexer++;
                 Logger.Log($"TURNO {indexer}");
                 Logger.Log($"{activeMunicipalities.Count} Comuni in gara");
@@ -100,19 +103,7 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 _gameHistory.Add(extractedMunicipality.Id);
 
-                Logger.Log($"Id estratto: {extractedMunicipality.Id} | {extractedMunicipality.Name}");
-
-                Municipality attacker = Utilities.GetAttacker(municipalities, extractedMunicipality);
-                Logger.Log($"Attaccante: {attacker.Id} | {attacker.Name}");
-
-                Municipality? conquered = Utilities.GetConquered(municipalities, attacker);
-                if (conquered == null)
-                {
-                    Logger.Log("Nessun bersaglio disponibile per l'attaccante estratto, salto il turno.");
-                    continue;
-                }
-
-                Utilities.ConquestHandler(renderer, indexer, municipalities, attacker.Id, conquered.Id, _isDebug);
+                GameEngine.PlayTurn(renderer, municipalities, extractedMunicipality.Id, indexer, _isDebug);
 
                 activeMunicipalities = Utilities.GetActiveMunicipalities(municipalities);
                 Logger.Log($"{activeMunicipalities.Count} {(activeMunicipalities.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
