@@ -10,6 +10,9 @@ namespace CiociariaGuerraBot.ConsoleApp
         private static bool _isDebug;
         private static bool _createGif;
         private static int _gameMode;
+        private static int _gameSpeed;
+
+        private static List<int> _gameHistory = [];
 
         private enum GameMode
         {
@@ -36,6 +39,7 @@ namespace CiociariaGuerraBot.ConsoleApp
             _isDebug = Convert.ToBoolean(ConfigurationManager.AppSettings["isDebug"]);
             _createGif = Convert.ToBoolean(ConfigurationManager.AppSettings["createGif"]);
             _gameMode = Convert.ToInt32(ConfigurationManager.AppSettings["gameMode"]);
+            _gameSpeed = Convert.ToInt32(ConfigurationManager.AppSettings["gameSpeed"]);
 
             _svgMap = ConfigurationManager.AppSettings["SVG_Map"];
             if (string.IsNullOrWhiteSpace(_svgMap))
@@ -94,6 +98,8 @@ namespace CiociariaGuerraBot.ConsoleApp
                     return;
                 }
 
+                _gameHistory.Add(extractedMunicipality.Id);
+
                 Logger.Log($"Id estratto: {extractedMunicipality.Id} | {extractedMunicipality.Name}");
 
                 Municipality attacker = Utilities.GetAttacker(municipalities, extractedMunicipality);
@@ -110,6 +116,9 @@ namespace CiociariaGuerraBot.ConsoleApp
 
                 activeMunicipalities = Utilities.GetActiveMunicipalities(municipalities);
                 Logger.Log($"{activeMunicipalities.Count} {(activeMunicipalities.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
+
+
+                Thread.Sleep(_gameSpeed);
             }
 
             Logger.Log("---------------------------------------------------------------------------------------------------------------------------");
@@ -125,7 +134,7 @@ namespace CiociariaGuerraBot.ConsoleApp
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
 
 
-                FirebaseClient.LoadVictory(timestamp, winner.Id, winner.Name, indexer).Wait();
+                FirebaseClient.LoadVictory(timestamp, winner.Id, winner.Name, indexer, _gameHistory.ToArray()).Wait();
 
             }
             else

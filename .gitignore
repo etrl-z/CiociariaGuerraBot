@@ -364,3 +364,4 @@ FodyWeavers.xsd
 */App.config
 */firebaseConfiguration.json
 Output/*
+*/deploy.ps1
