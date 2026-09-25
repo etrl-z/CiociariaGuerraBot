@@ -7,6 +7,7 @@
 		<add key="createGif" value="false" />
 		<add key="gameMode" value="0" />
 		<add key="gameSpeed" value="650" />
+		<add key="mapDocument" value="current" />
 
 		<add key="ScaleX" value="2.834809" />
 		<add key="ScaleY" value="-2.834698" />

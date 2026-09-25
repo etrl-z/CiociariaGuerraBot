@@ -8,7 +8,8 @@
 		<add key="OutputFolder" value="...\\Output" />
 		<add key="isDebug" value="false" />
 		<add key="gameSpeed" value="0" />
-
+		<add key="mapDocument" value="replay" />
+		
 		<add key="ScaleX" value="2.834809" />
 		<add key="ScaleY" value="-2.834698" />
 		<add key="OffsetX" value="510.7850" />

@@ -7,7 +7,7 @@ namespace CiociariaGuerraBot.Core
         private static string projectId = "base64-image-visualizer";
         private static string? credentialsPath;
 
-        public static async Task LoadImage(string imagePath)
+        public static async Task LoadImage(string imagePath, string mapDocument = "current")
         {
             byte[] imageBytes = await File.ReadAllBytesAsync(imagePath);
             string base64 = Convert.ToBase64String(imageBytes);
@@ -16,7 +16,7 @@ namespace CiociariaGuerraBot.Core
 
             DocumentReference doc = db
                 .Collection("maps")
-                .Document("current");
+                .Document(mapDocument);
 
             Dictionary<string, object> data = new()
             {

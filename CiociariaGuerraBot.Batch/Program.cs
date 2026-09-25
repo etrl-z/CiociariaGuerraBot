@@ -12,6 +12,7 @@ namespace CiociariaGuerraBot.Batch
         private static bool _createGif;
         private static int _gameMode;
         private static int _gameSpeed;
+        private static string? _mapDocument;
 
         private static List<int> _gameHistory = [];
 
@@ -41,6 +42,7 @@ namespace CiociariaGuerraBot.Batch
             _createGif = Convert.ToBoolean(ConfigurationManager.AppSettings["createGif"]);
             _gameMode = Convert.ToInt32(ConfigurationManager.AppSettings["gameMode"]);
             _gameSpeed = Convert.ToInt32(ConfigurationManager.AppSettings["gameSpeed"]);
+            _mapDocument = ConfigurationManager.AppSettings["mapDocument"] ?? "current";
 
             _svgMap = ConfigurationManager.AppSettings["SVG_Map"];
             if (string.IsNullOrWhiteSpace(_svgMap))
@@ -103,7 +105,7 @@ namespace CiociariaGuerraBot.Batch
 
                 _gameHistory.Add(extractedMunicipality.Id);
 
-                GameEngine.PlayTurn(renderer, municipalities, extractedMunicipality.Id, indexer, _isDebug);
+                GameEngine.PlayTurn(renderer, municipalities, extractedMunicipality.Id, indexer, _isDebug, _mapDocument);
 
                 activeMunicipalities = Utilities.GetActiveMunicipalities(municipalities);
                 Logger.Log($"{activeMunicipalities.Count} {(activeMunicipalities.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
@@ -119,7 +121,7 @@ namespace CiociariaGuerraBot.Batch
             if (winner != null && winner.Name != null)
             {
                 indexer++;
-                Utilities.ConquestHandler(renderer, indexer, municipalities, winner.Id, null, _isDebug);
+                Utilities.ConquestHandler(renderer, indexer, municipalities, winner.Id, null, _isDebug, _mapDocument);
 
                 Logger.Log($"{winner.Name} ha interamente conquistato la Ciociaria.");
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");

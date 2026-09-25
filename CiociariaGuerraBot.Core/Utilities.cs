@@ -31,7 +31,7 @@ namespace CiociariaGuerraBot.Core
             return conquered;
         }
 
-        public static void ConquestHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int? conqueredId, bool isDebug)
+        public static void ConquestHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int? conqueredId, bool isDebug, string mapDocument)
         {
             Municipality? attacker = municipalities.FirstOrDefault(c => c.Id == attackerId);
             Municipality? conquered = municipalities.FirstOrDefault(c => c.Id == conqueredId);
@@ -66,7 +66,7 @@ namespace CiociariaGuerraBot.Core
                 // LOAD BASE64 ON FIREBASE
                 try
                 {
-                    FirebaseClient.LoadImage(outputJpg).Wait();
+                    FirebaseClient.LoadImage(outputJpg, mapDocument).Wait();
                 }
                 catch (Exception e)
                 {

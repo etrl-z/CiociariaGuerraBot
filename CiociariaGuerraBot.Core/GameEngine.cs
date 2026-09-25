@@ -8,7 +8,7 @@ namespace CiociariaGuerraBot.Core
 {
     public class GameEngine
     {
-        public static void PlayTurn(MapRenderer renderer, IReadOnlyList<Municipality> municipalities, int extractedMunicipalityId, int turn, bool isDebug)
+        public static void PlayTurn(MapRenderer renderer, IReadOnlyList<Municipality> municipalities, int extractedMunicipalityId, int turn, bool isDebug, string mapDocument)
         {
             Municipality extractedMunicipality = municipalities.First(c => c.Id == extractedMunicipalityId);
             Logger.Log($"Id estratto: {extractedMunicipality.Id} | {extractedMunicipality.Name}");
@@ -24,7 +24,7 @@ namespace CiociariaGuerraBot.Core
                 return;
             }
 
-            Utilities.ConquestHandler(renderer, turn, municipalities, attacker.Id, conquered.Id, isDebug);
+            Utilities.ConquestHandler(renderer, turn, municipalities, attacker.Id, conquered.Id, isDebug, mapDocument);
         }
     }
 }

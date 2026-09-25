@@ -13,6 +13,7 @@ namespace CiociariaGuerraBot.Replay
 
         private static bool _isDebug;
         private static int _gameSpeed;
+        private static string? _mapDocument;
 
         public static void Main(string[] args)
         {
@@ -32,6 +33,7 @@ namespace CiociariaGuerraBot.Replay
 
             _isDebug = Convert.ToBoolean(ConfigurationManager.AppSettings["isDebug"]);
             _gameSpeed = Convert.ToInt32(ConfigurationManager.AppSettings["gameSpeed"]);
+            _mapDocument = ConfigurationManager.AppSettings["mapDocument"] ?? "replay";
 
             _gameToReplay = ConfigurationManager.AppSettings["gameToReplay"];
             if (string.IsNullOrWhiteSpace(_gameToReplay))
@@ -87,7 +89,7 @@ namespace CiociariaGuerraBot.Replay
 
                 Municipality extractedMunicipality = municipalities.First(c => c.Id == gameHistory[indexer - 1]);
 
-                GameEngine.PlayTurn(renderer, municipalities, extractedMunicipality.Id, indexer, _isDebug);
+                GameEngine.PlayTurn(renderer, municipalities, extractedMunicipality.Id, indexer, _isDebug, _mapDocument);
 
                 activeMunicipalities = Utilities.GetActiveMunicipalities(municipalities);
                 Logger.Log($"{activeMunicipalities.Count} {(activeMunicipalities.Count > 1 ? "Comuni rimanenti" : "Comune rimanente")}.");
@@ -103,7 +105,7 @@ namespace CiociariaGuerraBot.Replay
             if (winner != null && winner.Name != null)
             {
                 indexer++;
-                Utilities.ConquestHandler(renderer, indexer, municipalities, winner.Id, null, _isDebug);
+                Utilities.ConquestHandler(renderer, indexer, municipalities, winner.Id, null, _isDebug, _mapDocument);
 
                 Logger.Log($"{winner.Name} ha interamente conquistato la Ciociaria.");
                 Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
