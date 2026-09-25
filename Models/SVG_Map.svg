@@ -5,13 +5,11 @@
 	<style>
 		.municipality-name {
 		font-family: "Trebuchet MS", "Verdana", sans-serif;
-		font-size: 13px;
+		font-size: 15px;
 		font-weight: 700;
-		fill: #2c2c2c;
+		fill: #fefefe;
 		text-anchor: middle;
-		text-transform: uppercase;
 		letter-spacing: 1px;
-		paint-order: stroke;
 		stroke: #fefefe;
 		stroke-width: 2.5px;
 		}
