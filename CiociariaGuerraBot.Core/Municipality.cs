@@ -31,10 +31,10 @@ namespace CiociariaGuerraBot.Core
             TerritoryCentroid_Y = _y;
         }
 
-        public double DistanceFrom(Municipality m2)
+        public double DistanceFromOriginal(Municipality m2)
         {
-            double dx = TerritoryCentroid_X - m2.TerritoryCentroid_X;
-            double dy = TerritoryCentroid_Y - m2.TerritoryCentroid_Y;
+            double dx = TerritoryCentroid_X - m2.OriginCentroid_X;
+            double dy = TerritoryCentroid_Y - m2.OriginCentroid_Y;
 
             return Math.Sqrt(dx * dx + dy * dy);
         }

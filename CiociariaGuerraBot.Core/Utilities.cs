@@ -25,7 +25,7 @@ namespace CiociariaGuerraBot.Core
         {
             Municipality? conquered = municipalities
                     .Where(c => c.OwnerId != attacker.Id)
-                    .OrderBy(c => attacker.DistanceFrom(c))
+                    .OrderBy(c => attacker.DistanceFromOriginal(c))
                     .FirstOrDefault();
 
             return conquered;
