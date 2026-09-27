@@ -67,7 +67,17 @@ namespace CiociariaGuerraBot.Core
             Logger.Log($"Tutti i territori sono stati unificati e formano ora il Comune di {winner.Name}.");
 
             if (gameHistory != null)
-                FirebaseClient.LoadVictory(timestamp, winner.Id, winner.Name, turn, [.. gameHistory]).Wait();
+            {
+                // LOAD BASE64 ON FIREBASE
+                try
+                {
+                    FirebaseClient.LoadVictory(timestamp, winner.Id, winner.Name, turn, [.. gameHistory]).Wait();
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("ERROR: Errore nel caricamento su Firestore. | " + e.Message);
+                }
+            }
         }
 
         public class TurnOutcome()
