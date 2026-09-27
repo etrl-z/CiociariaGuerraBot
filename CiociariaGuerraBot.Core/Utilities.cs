@@ -1,8 +1,10 @@
-﻿using System;
+﻿using ImageMagick;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static CiociariaGuerraBot.Core.GameEngine;
 
 namespace CiociariaGuerraBot.Core
 {
@@ -31,17 +33,12 @@ namespace CiociariaGuerraBot.Core
             return conquered;
         }
 
-        public static void ConquestHandler(MapRenderer renderer, int indexer, IReadOnlyList<Municipality> municipalities, int attackerId, int? conqueredId, bool isDebug, string mapDocument)
+        public static TurnOutcome ConquestHandler(IReadOnlyList<Municipality> municipalities, Municipality attacker, Municipality? conquered = null)
         {
-            Municipality? attacker = municipalities.FirstOrDefault(c => c.Id == attackerId);
-            Municipality? conquered = municipalities.FirstOrDefault(c => c.Id == conqueredId);
-
             // SAVE OLD OWNER (cannot be null: it's either the real owner, or the municipality itself)
             Municipality? oldOwner = conquered?.OwnerId is int ownerId
                 ? municipalities.First(c => c.Id == ownerId)
                 : conquered;
-
-            if (attacker == null) return;
 
             // STANDARD CONQUEST
             if (conquered != null && oldOwner != null)
@@ -58,26 +55,12 @@ namespace CiociariaGuerraBot.Core
                 RecalculateCentroid(oldOwner, municipalities);
             }
 
-            // RENDER IMAGE AND RETURN JPG PATH
-            string outputJpg = renderer.Render(municipalities, isDebug, indexer, attacker?.Id, conquered?.Id, oldOwner?.Id);
-
-            if (!String.IsNullOrEmpty(outputJpg))
+            return new TurnOutcome()
             {
-                // LOAD BASE64 ON FIREBASE
-                try
-                {
-                    FirebaseClient.LoadImage(outputJpg, mapDocument).Wait();
-                }
-                catch (Exception e)
-                {
-                    Logger.Log("ERROR: Errore nel caricamento su Firestore. | " + e.Message);
-                }
-            }
-
-            if (isDebug)
-            {
-                GenerateReport(municipalities);
-            }
+                Attacker = attacker,
+                Conquered = conquered,
+                OldOwner = oldOwner
+            };
         }
 
         public static void GenerateText(IReadOnlyList<Municipality> municipalities, Municipality attacker, Municipality conquered, Municipality oldOwner)
@@ -128,6 +111,23 @@ namespace CiociariaGuerraBot.Core
 
             entity.TerritoryCentroid_X = territories.Average(c => c.OriginCentroid_X);
             entity.TerritoryCentroid_Y = territories.Average(c => c.OriginCentroid_Y);
+        }
+
+        public static void ConvertSvgToJpg(string fileSvg, string fileJpg)
+        {
+            var settings = new MagickReadSettings
+            {
+                BackgroundColor = MagickColors.White
+            };
+
+            using var image = new MagickImage();
+
+            image.Read(fileSvg, settings);
+
+            image.Format = MagickFormat.Jpeg;
+            image.Quality = 95;
+
+            image.Write(fileJpg);
         }
     }
 }

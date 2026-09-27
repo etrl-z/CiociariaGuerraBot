@@ -29,7 +29,7 @@ namespace CiociariaGuerraBot.Core
             await doc.SetAsync(data);
         }
 
-        public static async Task LoadVictory(string documentPath, int winnerId, string winnerName, int turn, int[] gameHistory)
+        public static async Task LoadVictory(string documentPath, int winnerId, string? winnerName, int turn, int[] gameHistory)
         {
             FirestoreDb db = GetDB().Result;
 
@@ -40,7 +40,7 @@ namespace CiociariaGuerraBot.Core
             Dictionary<string, object> data = new()
             {
                 { "winner", winnerId },
-                { "winnerName", winnerName },
+                { "winnerName", winnerName ?? "" },
                 { "duration", turn },
                 { "gameHistory", gameHistory },
                 { "timestamp", Timestamp.GetCurrentTimestamp() }

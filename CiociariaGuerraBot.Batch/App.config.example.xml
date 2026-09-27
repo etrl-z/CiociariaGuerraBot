@@ -1,13 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration>
 	<appSettings>
-		<add key="SVG_Map" value="...\\Models\\SVG_Map.svg" />
-		<add key="OutputFolder" value="...\\Output" />
+		<add key="SVG_Map" value="..\\..\\..\\..\\Models\\SVG_Map.svg" />
+		<add key="OutputFolder" value="..\\..\\..\\..\\Output" />
 		<add key="isDebug" value="false" />
-		<add key="createGif" value="false" />
 		<add key="gameMode" value="0" />
 		<add key="gameSpeed" value="650" />
-		<add key="mapDocument" value="current" />
+		<add key="dbPath" value="current" />
 
 		<add key="ScaleX" value="2.834809" />
 		<add key="ScaleY" value="-2.834698" />

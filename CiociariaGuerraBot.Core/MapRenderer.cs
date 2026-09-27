@@ -72,7 +72,7 @@ namespace CiociariaGuerraBot.Core
             LoadMunicipalitiesList();
         }
 
-        public string Render(IReadOnlyList<Municipality> municipalities, bool isDebug, int turn = 0, int? attackerId = null, int? conqueredId = null, int? oldOwnerId = null)
+        public string Render(IReadOnlyList<Municipality> municipalities, int? attackerId, int? conqueredId, int? oldOwnerId, int turn = 0, bool isDebug = false)
         {
             _names.RemoveNodes();
 
@@ -153,7 +153,7 @@ namespace CiociariaGuerraBot.Core
 
             // CONVERSION TO JPG
             string fileJpg = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(outputPath) + ".jpg");
-            GifMaker.ConvertSvgToJpg(outputPath, fileJpg);
+            Utilities.ConvertSvgToJpg(outputPath, fileJpg);
 
             _outputJpg = fileJpg;
 

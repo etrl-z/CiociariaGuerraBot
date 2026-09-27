@@ -3,12 +3,12 @@
 	<appSettings>
 
 		<add key="gameToReplay" value="2026_09_24_11_00_00" />
-		
-		<add key="SVG_Map" value="...\\Models\\SVG_Map.svg" />
-		<add key="OutputFolder" value="...\\Output" />
+
+		<add key="SVG_Map" value="..\\..\\..\\..\\Models\\SVG_Map.svg" />
+		<add key="OutputFolder" value="..\\..\\..\\..\\Output" />
 		<add key="isDebug" value="false" />
 		<add key="gameSpeed" value="0" />
-		<add key="mapDocument" value="replay" />
+		<add key="dbPath" value="replay" />
 		
 		<add key="ScaleX" value="2.834809" />
 		<add key="ScaleY" value="-2.834698" />
